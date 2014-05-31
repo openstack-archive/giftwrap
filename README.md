@@ -10,7 +10,14 @@ Usage
 Dependencies
 ============
 
+* `Vagrant`
 * `fpm`
+
+Development
+===========
+
+    $ git clone git@github.com:cloudcadre/giftwrap.git
+    $ vagrant up
 
 Testing
 =======
