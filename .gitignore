@@ -1,0 +1,5 @@
+.tox/
+*.egg-info/
+AUTHORS
+ChangeLog
+*.csv
