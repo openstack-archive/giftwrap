@@ -4,3 +4,5 @@ AUTHORS
 ChangeLog
 *.csv
 .vagrant/
+build
+pbr*.egg
