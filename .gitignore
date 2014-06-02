@@ -6,3 +6,4 @@ ChangeLog
 .vagrant/
 build
 pbr*.egg
+*.pyc
