@@ -17,6 +17,8 @@
 
 import unittest2 as unittest
 
+from mock import patch
+
 from giftwrap import util
 
 
@@ -38,3 +40,20 @@ class TestUtil(unittest.TestCase):
         _, _, err = util.execute(cmd)
 
         self.assertEquals('stderr\n', err)
+
+    def test_clone_git_repo(self):
+        with patch('os.path.isdir') as mocked_isdir:
+            mocked_isdir.return_value = False
+            with patch('git.Repo.clone_from') as mocked:
+                util.clone_git_repo('git@github.com:foo/bar.git', '/tmp')
+
+                mocked.assert_called_once_with('git@github.com:foo/bar.git',
+                                               '/tmp/bar')
+
+    def test_clone_git_repo_does_not_clone_if_already_cloned(self):
+        with patch('os.path.isdir') as mocked_isdir:
+            mocked_isdir.return_value = True
+            with patch('git.Repo.clone_from') as mocked:
+                util.clone_git_repo('git@github.com:foo/bar.git', '/tmp/')
+
+                assert not mocked.called
