@@ -18,6 +18,10 @@
 import os
 import subprocess
 
+from git import Repo
+
+import giturlparse
+
 
 def execute(command):
     """
@@ -36,3 +40,12 @@ def execute(command):
     exitcode = process.wait()
 
     return exitcode, out, err
+
+
+def clone_git_repo(repo, checkout_dir):
+    parsedrepo = giturlparse.parse(repo, False)
+    directory = os.path.join(checkout_dir, parsedrepo.repo)
+    if not os.path.isdir(directory):
+        Repo.clone_from(repo, directory)
+
+    return directory
