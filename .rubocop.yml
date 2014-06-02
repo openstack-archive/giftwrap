@@ -1,0 +1,7 @@
+AllCops:
+  Include:
+    - ./**/*.rb
+    - Vagrantfile
+
+WordArray:
+  MinSize: 3

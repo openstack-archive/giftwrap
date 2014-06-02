@@ -22,7 +22,7 @@ from giftwrap import util
 
 class TestUtil(unittest.TestCase):
     def test_execute_returns_exitcode_tuple(self):
-        cmd = '/bin/test true'
+        cmd = 'test true'
         result, _, _ = util.execute(cmd)
 
         self.assertEquals(0, result)
