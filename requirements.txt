@@ -1,1 +1,3 @@
 pbr
+GitPython==0.3.2.RC1
+giturlparse.py
