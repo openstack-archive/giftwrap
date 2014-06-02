@@ -1,0 +1,9 @@
+---
+package_path: '/opt/openstack/'
+
+projects:
+  - name: nova
+    url: https://github.com/openstack/nova
+
+  - name: keystone
+    url: https://github.com/openstack/keystone
