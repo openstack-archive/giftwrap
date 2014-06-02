@@ -22,8 +22,7 @@ Development
 Testing
 =======
 
-    $ sudo pip install tox
-    $ tox
+    $ make test
 
 License
 =======
