@@ -16,27 +16,36 @@
 
 import yaml
 
-DEFAULT_PROJECT_PATH = '/opt/openstack'
+from giftwrap.openstack_project import OpenstackProject
+from giftwrap.settings import Settings
+from jinja2 import Template
 
 
 class BuildSpec(object):
 
-    def __init__(self, manifest):
-        self._spec = yaml.load(manifest)
-        self._project_path = None
-        self._projects = None
+    def __init__(self, manifest, version=None, templatevars=None):
+        self._manifest = self._render_manifest(manifest, version, templatevars)
+        self.projects = self._render_projects()
+        self.settings = self._render_settings()
 
-    @property
-    def project_path(self):
-        if not self._project_path:
-            if 'project_path' in self._spec.keys():
-                self._project_path = self._spec['project_path']
-            else:
-                self._project_path = DEFAULT_PROJECT_PATH
-        return self._project_path
+    def _render_manifest(self, manifest, version=None, templatevars=None):
+        manifestvars = {}
+        if templatevars:
+            manifestvars = yaml.load(templatevars)
 
-    @property
-    def projects(self):
-        if 'projects' in self._spec.keys() and not self._projects:
-            self._projects = self._spec['projects']
-        return self._projects
+        if version:
+            manifestvars['version'] = version
+
+        template = Template(manifest)
+        manifest = template.render(manifestvars)
+        return yaml.load(manifest)
+
+    def _render_projects(self):
+        projects = []
+        if 'projects' in self._manifest:
+            for project in self._manifest['projects']:
+                projects.append(OpenstackProject.factory(project))
+        return projects
+
+    def _render_settings(self):
+        return Settings.factory(self._manifest)

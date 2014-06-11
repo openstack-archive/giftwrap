@@ -7,3 +7,4 @@ ChangeLog
 build
 pbr*.egg
 *.pyc
+*.sw?
