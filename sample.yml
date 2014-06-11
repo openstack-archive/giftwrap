@@ -1,9 +1,7 @@
 ---
-package_path: '/opt/openstack/'
+version: 1.2
+base_path: '/tmp/openstack-test'
 
 projects:
-  - name: nova
-    url: https://github.com/openstack/nova
-
   - name: keystone
-    url: https://github.com/openstack/keystone
+    ref: stable/havana
