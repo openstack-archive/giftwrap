@@ -17,7 +17,11 @@
 import os
 import sys
 
+from giftwrap.gerrit import GerritReview
+from giftwrap.openstack_git_repo import OpenstackGitRepo
+from giftwrap.openstack_project import OpenstackProject
 from giftwrap.shell import LOG
+from giftwrap.util import execute
 
 
 class Builder(object):
@@ -29,7 +33,24 @@ class Builder(object):
         """ this is where all the magic happens """
 
         try:
-            os.makedirs(self._spec.project_path)
+            spec = self._spec
+            base_path = spec.settings.base_path
+            version = spec.settings.version
+
+            os.makedirs(base_path)
+            for project in self._spec.projects:
+                project_git_path = os.path.join(base_path, project.name)
+                repo = OpenstackGitRepo(project.giturl, project.ref)
+                repo.clone(project_git_path)
+
+                review = GerritReview(repo.change_id, project.project_path)
+                print "Cloned %s with change_id of: %s" % (project.name, repo.change_id)
+                print "...with pip dependencies of:"
+                print review.build_pip_dependencies(string=True)
+
+                #execute('python tools/install_venv.py', cwd=project_git_path)
+                #deps_string = " -d ".join(deps)
+                #execute("fpm -s dir -t deb -n foobar -d %s /tmp/openstack" % deps_string)
         except Exception as e:
-            LOG.fatal("Oops. Something went wrong. Error was:\n%s", e)
+            LOG.exception("Oops. Something went wrong. Error was:\n%s", e)
             sys.exit(-1)
