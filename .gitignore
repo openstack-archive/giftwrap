@@ -7,3 +7,5 @@ ChangeLog
 build
 pbr*.egg
 *.pyc
+*.swp
+*.swo
