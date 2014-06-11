@@ -1,1 +1,7 @@
+argparse
 pbr
+gitpython==0.3.2.RC1
+pyyaml
+jinja2
+requests
+pygerrit

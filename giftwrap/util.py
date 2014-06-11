@@ -18,14 +18,25 @@
 import os
 import subprocess
 
+from giftwrap.shell import LOG
 
-def execute(command):
+
+def execute(command, cwd=None):
     """
     Executes a command in a subprocess.  Returns a tuple of
     (exitcode, out, err).
 
     :param command: Command string to execute.
+    :param cwd: Directory to execute from.
     """
+
+    original_dir = None
+    if cwd:
+        original_dir = os.getcwd()
+        os.chdir(cwd)
+        LOG.info("Changed directory to %s", cwd)
+
+    LOG.info("Running %s", command)
     process = subprocess.Popen(command,
                                cwd=os.getcwd(),
                                stdin=subprocess.PIPE,
@@ -34,5 +45,12 @@ def execute(command):
                                shell=True)
     (out, err) = process.communicate()
     exitcode = process.wait()
+
+    LOG.debug("Command exitted with rc: %s; STDOUT: %s; STDERR: %s" %
+              (exitcode, out, err))
+
+    if cwd:
+        os.chdir(original_dir)
+        LOG.info("Changed directory back to %s", original_dir)
 
     return exitcode, out, err

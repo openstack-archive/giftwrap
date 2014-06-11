@@ -17,31 +17,37 @@
 import argparse
 import logging
 import sys
+import traceback
 
 from giftwrap.build_spec import BuildSpec
 
 LOG = logging.getLogger(__name__)
 log_handler = logging.StreamHandler()
 LOG.addHandler(log_handler)
+LOG.setLevel(logging.DEBUG)
 
 from giftwrap.builder import Builder
+from giftwrap.settings import Settings
 
 
 def build(args):
     """ the entry point for all build subcommand tasks """
-    if not args.manifest:
-        LOG.fatal("build command requires a manifest")
-        sys.exit(-1)
-
     try:
         manifest = None
+        templatevars = None
+
         with open(args.manifest, 'r') as fh:
             manifest = fh.read()
-        buildspec = BuildSpec(manifest)
+
+        if args.templatevars:
+            with open(args.templatevars, 'r') as fh:
+                templatevars = fh.read()
+
+        buildspec = BuildSpec(manifest, args.version, templatevars)
         builder = Builder(buildspec)
         builder.build()
     except Exception as e:
-        LOG.fatal("Unable to parse manifest %s. Error: %s", args.manifest, e)
+        LOG.exception("Unable to parse manifest. Error: %s", e)
         sys.exit(-1)
 
 
@@ -54,7 +60,11 @@ def main():
                                        help='additional help')
     build_subcmd = subparsers.add_parser('build',
                                          description='build giftwrap packages')
-    build_subcmd.add_argument('-m', '--manifest')
+    build_subcmd.add_argument('-m', '--manifest', required=True)
+    build_subcmd.add_argument('-a', '--allinone', action='store_true')
+    build_subcmd.add_argument('-v', '--version')
+    build_subcmd.add_argument('-s', '--source', action='store_true')
+    build_subcmd.add_argument('-t', '--templatevars')
     build_subcmd.set_defaults(func=build)
 
     args = parser.parse_args()
