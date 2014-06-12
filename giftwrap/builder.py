@@ -41,13 +41,15 @@ class Builder(object):
                 repo.clone(project_git_path)
 
                 review = GerritReview(repo.change_id, project.project_path)
-                print "Cloned %s with change_id of: %s" % (project.name, repo.change_id)
+                print "Cloned %s with change_id of: %s" % (project.name,
+                                                           repo.change_id)
                 print "...with pip dependencies of:"
                 print review.build_pip_dependencies(string=True)
 
                 # execute('python tools/install_venv.py', cwd=project_git_path)
                 # deps_string = " -d ".join(deps)
-                # execute("fpm -s dir -t deb -n foobar -d %s /tmp/openstack" % deps_string)
+                # execute("fpm -s dir -t deb -n foobar -d %s /tmp/openstack" %
+                #         deps_string)
         except Exception as e:
             LOG.exception("Oops. Something went wrong. Error was:\n%s", e)
             sys.exit(-1)
