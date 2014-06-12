@@ -21,7 +21,9 @@ import subprocess
 from git import Repo
 import giturlparse
 
-from giftwrap.shell import LOG
+from giftwrap import log
+
+LOG = log.get_logger(__name__)
 
 
 def execute(command, cwd=None):

@@ -17,9 +17,11 @@
 import os
 import sys
 
+from giftwrap import log
 from giftwrap.gerrit import GerritReview
 from giftwrap.openstack_git_repo import OpenstackGitRepo
-from giftwrap.shell import LOG
+
+LOG = log.get_logger(__name__)
 
 
 class Builder(object):

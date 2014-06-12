@@ -15,16 +15,13 @@
 #    License for the specific language governing permissions and limitations
 
 import argparse
-import logging
 import sys
 
-LOG = logging.getLogger(__name__)
-log_handler = logging.StreamHandler()
-LOG.addHandler(log_handler)
-LOG.setLevel(logging.DEBUG)
-
+from giftwrap import log
 from giftwrap.build_spec import BuildSpec
 from giftwrap.builder import Builder
+
+LOG = log.get_logger(__name__)
 
 
 def build(args):
