@@ -14,10 +14,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 
-import json
 import re
+
 import requests
-import sys
 
 from pygerrit.rest import GerritRestAPI
 
@@ -25,7 +24,6 @@ DEFAULT_GERRIT_URL = 'https://review.openstack.org'
 
 
 class GerritReview(object):
-
     def __init__(self, changeid, project, gerrit_url=DEFAULT_GERRIT_URL):
         self.changeid = changeid
         self.project = project

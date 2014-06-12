@@ -25,9 +25,8 @@ OPENSTACK_PROJECTS = [
 
 
 class OpenstackProject(object):
-
     def __init__(self, name, ref=None, giturl=None):
-        if not name in OpenstackProject.get_project_names():
+        if name not in OpenstackProject.get_project_names():
             raise Exception("'%s' is not a supported OpenStack project name" %
                             name)
         self.name = name

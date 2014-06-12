@@ -16,13 +16,13 @@
 
 import yaml
 
+from jinja2 import Template
+
 from giftwrap.openstack_project import OpenstackProject
 from giftwrap.settings import Settings
-from jinja2 import Template
 
 
 class BuildSpec(object):
-
     def __init__(self, manifest, version=None, templatevars=None):
         self._manifest = self._render_manifest(manifest, version, templatevars)
         self.projects = self._render_projects()
