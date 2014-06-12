@@ -17,17 +17,14 @@
 import argparse
 import logging
 import sys
-import traceback
-
-from giftwrap.build_spec import BuildSpec
 
 LOG = logging.getLogger(__name__)
 log_handler = logging.StreamHandler()
 LOG.addHandler(log_handler)
 LOG.setLevel(logging.DEBUG)
 
+from giftwrap.build_spec import BuildSpec
 from giftwrap.builder import Builder
-from giftwrap.settings import Settings
 
 
 def build(args):

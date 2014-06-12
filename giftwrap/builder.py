@@ -19,13 +19,10 @@ import sys
 
 from giftwrap.gerrit import GerritReview
 from giftwrap.openstack_git_repo import OpenstackGitRepo
-from giftwrap.openstack_project import OpenstackProject
 from giftwrap.shell import LOG
-from giftwrap.util import execute
 
 
 class Builder(object):
-
     def __init__(self, spec):
         self._spec = spec
 
@@ -35,7 +32,7 @@ class Builder(object):
         try:
             spec = self._spec
             base_path = spec.settings.base_path
-            version = spec.settings.version
+            # version = spec.settings.version
 
             os.makedirs(base_path)
             for project in self._spec.projects:
@@ -48,9 +45,9 @@ class Builder(object):
                 print "...with pip dependencies of:"
                 print review.build_pip_dependencies(string=True)
 
-                #execute('python tools/install_venv.py', cwd=project_git_path)
-                #deps_string = " -d ".join(deps)
-                #execute("fpm -s dir -t deb -n foobar -d %s /tmp/openstack" % deps_string)
+                # execute('python tools/install_venv.py', cwd=project_git_path)
+                # deps_string = " -d ".join(deps)
+                # execute("fpm -s dir -t deb -n foobar -d %s /tmp/openstack" % deps_string)
         except Exception as e:
             LOG.exception("Oops. Something went wrong. Error was:\n%s", e)
             sys.exit(-1)

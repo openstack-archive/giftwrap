@@ -21,7 +21,6 @@ from git import Repo
 
 
 class OpenstackGitRepo(object):
-
     def __init__(self, url, ref='master'):
         self.url = url
         self.ref = ref
@@ -32,7 +31,7 @@ class OpenstackGitRepo(object):
 
     @property
     def cloned(self):
-        return not self._repo == None
+        return self._repo is not None
 
     @property
     def head(self):
