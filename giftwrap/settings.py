@@ -18,6 +18,7 @@
 class Settings(object):
 
     DEFAULT_BASE_PATH = '/opt/openstack'
+    DEFAULT_VERSION = None
 
     def __init__(self, version, base_path):
         self._validate_settings(version, base_path)
@@ -30,6 +31,6 @@ class Settings(object):
 
     @staticmethod
     def factory(settings_dict):
-        version = settings_dict.get('version', None)
+        version = settings_dict.get('version', Settings.DEFAULT_VERSION)
         base_path = settings_dict.get('base_path', Settings.DEFAULT_BASE_PATH)
         return Settings(version, base_path)
