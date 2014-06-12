@@ -73,7 +73,8 @@ class GerritReview(object):
                 break
 
         if not change:
-            raise Exception("could not find change with ID: %s" % self.changeid)
+            raise Exception("could not find change with ID: %s" %
+                            self.changeid)
 
         detail = restclient.get("/changes/%s/detail" % change['id'])
         return detail
