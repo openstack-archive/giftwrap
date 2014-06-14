@@ -66,7 +66,7 @@ def main():
     args = parser.parse_args()
 
     if args.debug:
-        log.set_debug()
+        log.set_level_debug()
 
     args.func(args)
 
