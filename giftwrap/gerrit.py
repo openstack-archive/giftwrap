@@ -24,6 +24,7 @@ DEFAULT_GERRIT_URL = 'https://review.openstack.org'
 
 
 class GerritReview(object):
+
     def __init__(self, changeid, project, gerrit_url=DEFAULT_GERRIT_URL):
         self.changeid = changeid
         self.project = project
@@ -102,8 +103,22 @@ class GerritReview(object):
             if py27 and re.match('gate\-.+\-python27', gate['name']):
                 url = gate['url']
 
+        # check if it is console.html or console.html.gz
+        resp = requests.get(url)
+        if resp.status_code != 200:
+            raise Exception("Unable to find the build's console log for %s" %
+                            url)
+
+        build_log = None
+        if 'console.html.gz' in resp.text:
+            build_log = 'console.html.gz'
+        elif 'console.html' in resp.text:
+            build_log = 'console.html'
+        else:
+            raise Exception("Didn't find a build log. Does one exist?")
+
         if url:
-            return "%s/console.html.gz" % url
+            return "%s/%s" % (url, build_log)
         return url
 
     def _parse_merge_message(self, msg):
