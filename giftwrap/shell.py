@@ -21,7 +21,7 @@ from giftwrap import log
 from giftwrap.build_spec import BuildSpec
 from giftwrap.builder import Builder
 
-LOG = log.get_logger(__name__)
+LOG = log.get_logger()
 
 
 def build(args):
@@ -48,6 +48,8 @@ def build(args):
 def main():
     """ the entry point for all things giftwrap """
     parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--debug', action='store_true',
+                        help='Set logging level to DEBUG')
 
     subparsers = parser.add_subparsers(title='subcommands',
                                        description='valid subcommands',
@@ -62,6 +64,10 @@ def main():
     build_subcmd.set_defaults(func=build)
 
     args = parser.parse_args()
+
+    if args.debug:
+        log.set_debug()
+
     args.func(args)
 
 

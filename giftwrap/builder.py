@@ -21,7 +21,7 @@ from giftwrap import log
 from giftwrap.gerrit import GerritReview
 from giftwrap.openstack_git_repo import OpenstackGitRepo
 
-LOG = log.get_logger(__name__)
+LOG = log.get_logger()
 
 
 class Builder(object):
@@ -41,8 +41,8 @@ class Builder(object):
                 project_git_path = os.path.join(base_path, project.name)
                 repo = OpenstackGitRepo(project.giturl, project.ref)
                 repo.clone(project_git_path)
-
                 review = GerritReview(repo.change_id, project.project_path)
+
                 print "Cloned %s with change_id of: %s" % (project.name,
                                                            repo.change_id)
                 print "...with pip dependencies of:"
