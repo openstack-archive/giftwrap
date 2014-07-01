@@ -1,5 +1,18 @@
 giftwrap
 ========
+A tool for creating bespoke system-native OpenStack packages.
+
+Anyone running OpenStack at scale typically crafts their own software distribution mechanism. There may be many reasons for this, but chief among them seem to be the desire to ship security patches, deliver custom code, lock their releases at a revision of their choosing, or just generally stay closer to trunk.
+
+Unfortunately, until now, there has been no easy way to accomplish this. If one were to decide to utilize distribution packages they are now at the mercy of the distribution itself - who's release timeline may not be the same as yours.
+
+On the other hand, if one were to install directly from source, they will encounter a slightly different problem. Because the Python community is quite active, and because OpenStack, in many regards, does not strictly call out it's dependencies, one may build OpenStack with incompatible (or at least unknown) dependencies. Even worse, one may even find that OpenStack components may be different on different nodes in the cluster.
+
+Long story short, this sucks.
+
+Inspired by some of the work I had done to create (omnibus-openstack)[https://github.com/craigtracey/omnibus-openstack], I decided to do things slightly differently. While omnibus-openstack met most of my needs there were a few problems. First, the project was written in Ruby. While this, in my opinion, is not a problem, this makes it somewhat unapproachable to a vast segment of OpenStack users and operators. Second, the packages are HUGE. Again, while this may not be a real problem for many, the reason they are huge is that they manage all of the system level dependencies as well: things like openssl, libvirt, etc. These are not things that many folks typically want to be responsible for managing; whether for security or even complexity reasons.
+
+With all of this in mind, it seemed to me that we already had all of the information that we already needed to create system-native (ie. rpm, deb) packages that had already been tested with the Gerrit CI infrastructure.  Hence, giftwrap.
 
 Usage
 =====
@@ -23,6 +36,33 @@ Testing
 =======
 
     $ make test
+
+Supports
+========
+* Jinja2 templating - change your build by changing variables; not your manifest
+* versioned paths - this allows you to run services side by side; easing the upgrade process.
+
+How It Works
+============
+giftwrap is pretty simple. The basic flow is something like this:
+1. Create a YAML manifest with the packages you would like to build. See sample.yml
+2. Run:
+```
+ giftwrap build -m <manifest>
+```
+3. giftwrap will clone the git repo and git ref that you specify for each of the OpenStack projects
+4. giftwrap will find the closest Gerrit Change-Id and retrieve it's build logs
+5. From the build logs, giftwrap will find the pip dependencies used for that build and record them.
+6. A new virtualenv will be built with the pip dependencies found
+7. The OpenStack project code will be installed into the same virtualenv; but with locked pip dependencies
+8. giftwrap will check (devstack)[https://devstack.org] for the system dependencies necessary for that project (to be done)
+9. An (fpm)[https://github.com/jordansissel/fpm] package will be built from the intersection of the python install and system dependencies
+
+TODO
+====
+* Provide option for source removal; package only the executables
+* Allow for additional pip dependencies, alternate pip dependency versions, and even user-defined pip dependencies
+* Allow for additional/alternate system package dependencies
 
 License
 =======
