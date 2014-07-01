@@ -23,7 +23,7 @@ import giturlparse
 
 from giftwrap import log
 
-LOG = log.get_logger(__name__)
+LOG = log.get_logger()
 
 
 def execute(command, cwd=None):
@@ -39,9 +39,9 @@ def execute(command, cwd=None):
     if cwd:
         original_dir = os.getcwd()
         os.chdir(cwd)
-        LOG.info("Changed directory to %s", cwd)
+        LOG.debug("Changed directory to %s", cwd)
 
-    LOG.info("Running %s", command)
+    LOG.info("Running: '%s'", command)
     process = subprocess.Popen(command,
                                cwd=os.getcwd(),
                                stdin=subprocess.PIPE,
@@ -56,7 +56,7 @@ def execute(command, cwd=None):
 
     if cwd:
         os.chdir(original_dir)
-        LOG.info("Changed directory back to %s", original_dir)
+        LOG.debug("Changed directory back to %s", original_dir)
 
     return exitcode, out, err
 

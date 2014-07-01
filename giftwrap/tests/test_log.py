@@ -16,8 +16,8 @@
 #    under the License.
 
 import unittest2 as unittest
-from nose.plugins.logcapture import LogCapture
 
+from nose.plugins.logcapture import LogCapture
 from giftwrap import log
 
 
@@ -26,7 +26,20 @@ class TestLog(unittest.TestCase):
         lc = LogCapture()
         lc.begin()
         logger = log.get_logger()
-        logger.debug('testing')
+        logger.debug('test-debug')
+        logger.info('test-info')
         lc.end()
 
-        self.assertEquals("unknown: DEBUG: testing", lc.handler.buffer[0])
+        self.assertEquals("giftwrap: INFO: test-info", lc.handler.buffer[0])
+
+    def test_get_logger_debug(self):
+        lc = LogCapture()
+        lc.begin()
+        logger = log.get_logger()
+        log.set_level_debug()
+        logger.info('test-info')
+        logger.debug('test-debug')
+        lc.end()
+
+        self.assertEquals("giftwrap: INFO: test-info", lc.handler.buffer[0])
+        self.assertEquals("giftwrap: DEBUG: test-debug", lc.handler.buffer[1])
