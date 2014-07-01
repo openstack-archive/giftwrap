@@ -10,7 +10,7 @@ On the other hand, if one were to install directly from source, they will encoun
 
 Long story short, this sucks.
 
-Inspired by some of the work I had done to create (omnibus-openstack)[https://github.com/craigtracey/omnibus-openstack], I decided to do things slightly differently. While omnibus-openstack met most of my needs there were a few problems. First, the project was written in Ruby. While this, in my opinion, is not a problem, this makes it somewhat unapproachable to a vast segment of OpenStack users and operators. Second, the packages are HUGE. Again, while this may not be a real problem for many, the reason they are huge is that they manage all of the system level dependencies as well: things like openssl, libvirt, etc. These are not things that many folks typically want to be responsible for managing; whether for security or even complexity reasons.
+Inspired by some of the work I had done to create [omnibus-openstack](https://github.com/craigtracey/omnibus-openstack), I decided to do things slightly differently. While omnibus-openstack met most of my needs there were a few problems. First, the project was written in Ruby. While this, in my opinion, is not a problem, this makes it somewhat unapproachable to a vast segment of OpenStack users and operators. Second, the packages are HUGE. Again, while this may not be a real problem for many, the reason they are huge is that they manage all of the system level dependencies as well: things like openssl, libvirt, etc. These are not things that many folks typically want to be responsible for managing; whether for security or even complexity reasons.
 
 With all of this in mind, it seemed to me that we already had all of the information that we already needed to create system-native (ie. rpm, deb) packages that had already been tested with the Gerrit CI infrastructure.  Hence, giftwrap.
 
@@ -55,8 +55,8 @@ giftwrap is pretty simple. The basic flow is something like this:
 5. From the build logs, giftwrap will find the pip dependencies used for that build and record them.
 6. A new virtualenv will be built with the pip dependencies found
 7. The OpenStack project code will be installed into the same virtualenv; but with locked pip dependencies
-8. giftwrap will check (devstack)[https://devstack.org] for the system dependencies necessary for that project (to be done)
-9. An (fpm)[https://github.com/jordansissel/fpm] package will be built from the intersection of the python install and system dependencies
+8. giftwrap will check [devstack](https://devstack.org) for the system dependencies necessary for that project (to be done)
+9. An [fpm](https://github.com/jordansissel/fpm) package will be built from the intersection of the python install and system dependencies
 
 TODO
 ====
