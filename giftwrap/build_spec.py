@@ -16,36 +16,21 @@
 
 import yaml
 
-from jinja2 import Template
-
 from giftwrap.openstack_project import OpenstackProject
 from giftwrap.settings import Settings
 
 
 class BuildSpec(object):
-    def __init__(self, manifest, version=None, templatevars=None):
-        self._manifest = self._render_manifest(manifest, version, templatevars)
+
+    def __init__(self, manifest):
+        self._manifest = yaml.load(manifest)
+        self.settings = Settings.factory(self._manifest['settings'])
         self.projects = self._render_projects()
-        self.settings = self._render_settings()
-
-    def _render_manifest(self, manifest, version=None, templatevars=None):
-        manifestvars = {}
-        if templatevars:
-            manifestvars = yaml.load(templatevars)
-
-        if version:
-            manifestvars['version'] = version
-
-        template = Template(manifest)
-        manifest = template.render(manifestvars)
-        return yaml.load(manifest)
 
     def _render_projects(self):
         projects = []
         if 'projects' in self._manifest:
             for project in self._manifest['projects']:
-                projects.append(OpenstackProject.factory(project))
+                projects.append(OpenstackProject.factory(self.settings,
+                                                         project))
         return projects
-
-    def _render_settings(self):
-        return Settings.factory(self._manifest)

@@ -17,20 +17,34 @@
 
 class Settings(object):
 
-    DEFAULT_BASE_PATH = '/opt/openstack'
-    DEFAULT_VERSION = None
+    DEFAULTS = {
+        'package_name_format': 'openstack-{{ project.name }}',
+        'base_path': '/opt/openstack'
+    }
 
-    def __init__(self, version, base_path):
-        self._validate_settings(version, base_path)
-        self.version = version
-        self.base_path = base_path
-
-    def _validate_settings(self, version, base_path):
+    def __init__(self, package_name_format=None, version=None,
+                 base_path=None, all_in_one=False):
         if not version:
-            raise Exception("You must provide a version")
+            raise Exception("'version' is a required settings")
+        self._package_name_format = package_name_format
+        self.version = version
+        self._base_path = base_path
+        self.all_in_one = all_in_one
+
+    @property
+    def package_name_format(self):
+        return self._get_setting('package_name_format')
+
+    @property
+    def base_path(self):
+        return self._get_setting('base_path')
+
+    def _get_setting(self, setting_name):
+        setting = object.__getattribute__(self, '_%s' % setting_name)
+        if setting is None:
+            setting = Settings.DEFAULTS[setting_name]
+        return setting
 
     @staticmethod
     def factory(settings_dict):
-        version = settings_dict.get('version', Settings.DEFAULT_VERSION)
-        base_path = settings_dict.get('base_path', Settings.DEFAULT_BASE_PATH)
-        return Settings(version, base_path)
+        return Settings(**settings_dict)

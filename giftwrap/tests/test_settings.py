@@ -19,13 +19,21 @@ import unittest2 as unittest
 
 from giftwrap import settings
 
+SAMPLE_SETTINGS = {
+    'package_name_format': 'my-package-name',
+    'version': '1.2',
+    'base_path': '/basepath'
+}
+
 
 class TestSettings(unittest.TestCase):
     def test_factory(self):
-        settings_dict = {'version': 'version', 'base_path': 'basepath'}
+        settings_dict = SAMPLE_SETTINGS
         s = settings.Settings.factory(settings_dict)
 
-        self.assertEquals('version', s.version)
+        self.assertEquals('my-package-name', s.package_name_format)
+        self.assertEquals('1.2', s.version)
+        self.assertEquals('/basepath', s.base_path)
 
     def test_factory_has_default_base_path(self):
         settings_dict = {'version': 'version'}
@@ -34,6 +42,8 @@ class TestSettings(unittest.TestCase):
         self.assertEquals('/opt/openstack', s.base_path)
 
     def test_factory_raises_when_version_missing(self):
-        settings_dict = {'base_path': 'basepath'}
+        settings_dict = SAMPLE_SETTINGS
+        del(settings_dict['version'])
+
         with self.assertRaises(Exception):
             settings.Settings.factory(settings_dict)
