@@ -14,44 +14,108 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 
+import os
+import urlparse
 
-OPENSTACK_PROJECTS = [
-    {
-        'name': 'keystone',
-        'project_path': 'openstack/keystone',
-        'giturl': 'https://github.com/openstack/keystone.git'
-    }
-]
+from jinja2 import Environment
+
+DEFAULT_GITREF = 'master'
+DEFAULT_GITURL = {
+    'openstack': 'https://git.openstack.org/openstack/',
+    'stackforge': 'https://github.com/stackforge/'
+}
+DEFAULT_VENV_COMMAND = "virtualenv .venv"
+DEFAULT_INSTALL_COMMAND = ".venv/bin/pip install --extra-index http://pypi.openstack.org/openstack/ %s"  # noqa
+
+TEMPLATE_VARS = ('name', 'version', 'gitref', 'stackforge')
 
 
 class OpenstackProject(object):
-    def __init__(self, name, ref=None, giturl=None):
-        if name not in OpenstackProject.get_project_names():
-            raise Exception("'%s' is not a supported OpenStack project name" %
-                            name)
+
+    def __init__(self, settings, name, version=None, gitref=None, giturl=None,
+                 venv_command=None, install_command=None, install_path=None,
+                 package_name=None, stackforge=False):
+        self._settings = settings
         self.name = name
-        self._project = [p for p in OPENSTACK_PROJECTS if p['name'] == name][0]
-        self.ref = ref if ref else 'master'
-        self.project_path = self._project['project_path']
-        if not giturl:
-            self.giturl = OpenstackProject.get_project_giturl(name)
-        else:
-            self.giturl = giturl
+        self._version = version
+        self._gitref = gitref
+        self._giturl = giturl
+        self._venv_command = venv_command
+        self._install_command = install_command
+        self._install_path = install_path
+        self._package_name = package_name
+        self.stackforge = stackforge
+        self._git_path = None
+
+    @property
+    def version(self):
+        if not self._version:
+            self._version = self._settings.version
+        return self._version
+
+    @property
+    def gitref(self):
+        if not self._gitref:
+            self._gitref = DEFAULT_GITREF
+        return self._gitref
+
+    @property
+    def giturl(self):
+        if not self._giturl:
+            key = 'openstack'
+            if self.stackforge:
+                key = 'stackforge'
+            self._giturl = urlparse.urljoin(DEFAULT_GITURL[key], self.name)
+        return self._giturl
+
+    @property
+    def venv_command(self):
+        if not self._venv_command:
+            self._venv_command = DEFAULT_VENV_COMMAND
+        return self._venv_command
+
+    @property
+    def package_name(self):
+        if not self._package_name:
+            self._package_name = \
+                self._render_from_settings('package_name_format')
+        return self._package_name
+
+    def _template_vars(self):
+        template_vars = {'project': self}
+        for var in TEMPLATE_VARS:
+            template_vars[var] = object.__getattribute__(self, var)
+        return template_vars
+
+    @property
+    def install_path(self):
+        if not self._install_path:
+            base_path = self._render_from_settings('base_path')
+            self._install_path = os.path.join(base_path, self.name)
+        return self._install_path
+
+    @property
+    def install_command(self):
+        if not self._install_command:
+            self._install_command = DEFAULT_INSTALL_COMMAND
+        return self._install_command
+
+    @property
+    def git_path(self):
+        if not self._git_path:
+            gitorg = 'openstack'
+            if self.stackforge:
+                gitorg = 'stackforge'
+            self._git_path = '%s/%s' % (gitorg, self.name)
+        return self._git_path
+
+    def _render_from_settings(self, setting_name):
+        setting = getattr(self._settings, setting_name)
+        env = Environment()
+        env.add_extension('jinja2.ext.autoescape')
+        t = env.from_string(setting)
+        return t.render(self._template_vars())
 
     @staticmethod
-    def factory(project_dict):
-        name = project_dict.get('name', None)
-        ref = project_dict.get('ref', None)
-        giturl = project_dict.get('giturl', None)
-        return OpenstackProject(name, ref, giturl)
-
-    @staticmethod
-    def get_project_names():
-        return [n['name'] for n in OPENSTACK_PROJECTS]
-
-    @staticmethod
-    def get_project_giturl(name):
-        for project in OPENSTACK_PROJECTS:
-            if name == project['name']:
-                return project['giturl']
-        return None
+    def factory(settings, project_dict):
+        return OpenstackProject(settings, **project_dict)

@@ -28,16 +28,11 @@ def build(args):
     """ the entry point for all build subcommand tasks """
     try:
         manifest = None
-        templatevars = None
 
         with open(args.manifest, 'r') as fh:
             manifest = fh.read()
 
-        if args.templatevars:
-            with open(args.templatevars, 'r') as fh:
-                templatevars = fh.read()
-
-        buildspec = BuildSpec(manifest, args.version, templatevars)
+        buildspec = BuildSpec(manifest)
         builder = Builder(buildspec)
         builder.build()
     except Exception as e:
@@ -57,10 +52,6 @@ def main():
     build_subcmd = subparsers.add_parser('build',
                                          description='build giftwrap packages')
     build_subcmd.add_argument('-m', '--manifest', required=True)
-    build_subcmd.add_argument('-a', '--allinone', action='store_true')
-    build_subcmd.add_argument('-v', '--version')
-    build_subcmd.add_argument('-s', '--source', action='store_true')
-    build_subcmd.add_argument('-t', '--templatevars')
     build_subcmd.set_defaults(func=build)
 
     args = parser.parse_args()

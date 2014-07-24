@@ -1,7 +1,22 @@
 ---
-version: 1.2
-base_path: '/tmp/openstack-test'
+settings:
+  package_name_format: 'giftwrap-openstack-{{project.name}}'
+  version: '1.0-icehouse'
+  base_path: '/opt/giftwrap/openstack-{{version}}/'
 
 projects:
   - name: keystone
-    ref: stable/havana
+    gitref: stable/icehouse
+  - name: glance
+    gitref: stable/icehouse
+  - name: nova
+    gitref: stable/icehouse
+  - name: cinder
+    gitref: stable/icehouse
+  - name: horizon
+    gitref: stable/icehouse
+
+  - name: python-keystoneclient
+  - name: python-glanceclient
+  - name: python-novaclient
+  - name: python-cinderclient

@@ -20,11 +20,14 @@ import sys
 from giftwrap import log
 from giftwrap.gerrit import GerritReview
 from giftwrap.openstack_git_repo import OpenstackGitRepo
+from giftwrap.package import Package
+from giftwrap.util import execute
 
 LOG = log.get_logger()
 
 
 class Builder(object):
+
     def __init__(self, spec):
         self._spec = spec
 
@@ -33,25 +36,33 @@ class Builder(object):
 
         try:
             spec = self._spec
-            base_path = spec.settings.base_path
-            # version = spec.settings.version
-
-            os.makedirs(base_path)
             for project in self._spec.projects:
-                project_git_path = os.path.join(base_path, project.name)
-                repo = OpenstackGitRepo(project.giturl, project.ref)
-                repo.clone(project_git_path)
-                review = GerritReview(repo.change_id, project.project_path)
+                LOG.info("Beginning to build '%s'", project.name)
+                os.makedirs(project.install_path)
 
-                print "Cloned %s with change_id of: %s" % (project.name,
-                                                           repo.change_id)
-                print "...with pip dependencies of:"
-                print review.build_pip_dependencies(string=True)
+                LOG.info("Fetching source code for '%s'", project.name)
+                repo = OpenstackGitRepo(project.giturl, project.gitref)
+                repo.clone(project.install_path)
+                review = GerritReview(repo.change_id, project.git_path)
 
-                # execute('python tools/install_venv.py', cwd=project_git_path)
-                # deps_string = " -d ".join(deps)
-                # execute("fpm -s dir -t deb -n foobar -d %s /tmp/openstack" %
-                #         deps_string)
+                LOG.info("Creating the virtualenv for '%s'", project.name)
+                execute(project.venv_command, project.install_path)
+
+                LOG.info("Installing '%s' pip dependencies to the virtualenv",
+                         project.name)
+                execute(project.install_command %
+                        review.build_pip_dependencies(string=True),
+                        project.install_path)
+
+                LOG.info("Installing '%s' to the virtualenv", project.name)
+                execute(".venv/bin/python setup.py install",
+                        project.install_path)
+
+                if not spec.settings.all_in_one:
+                    pkg = Package(project.package_name, project.version,
+                                  project.install_path, True)
+                    pkg.build()
+
         except Exception as e:
             LOG.exception("Oops. Something went wrong. Error was:\n%s", e)
             sys.exit(-1)
