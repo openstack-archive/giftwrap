@@ -18,6 +18,8 @@
 import logging
 import sys
 
+from giftwrap.color import ColorStreamHandler
+
 NAME = 'giftwrap'
 logger = None
 
@@ -29,7 +31,7 @@ def get_logger():
         return logger
 
     logger = logging.getLogger(NAME)
-    log_handler = logging.StreamHandler(sys.stdout)
+    log_handler = ColorStreamHandler(sys.stdout)
     fmt = logging.Formatter(fmt='%(asctime)s %(levelname)s: %(message)s',
                             datefmt='%F %H:%M:%S')
     log_handler.setFormatter(fmt)
