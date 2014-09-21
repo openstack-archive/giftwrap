@@ -17,43 +17,22 @@
 
 import unittest2 as unittest
 
-from mock import patch
-
 from giftwrap import util
 
 
 class TestUtil(unittest.TestCase):
-    def test_execute_returns_exitcode_tuple(self):
-        cmd = 'test true'
-        result, _, _ = util.execute(cmd)
 
-        self.assertEquals(0, result)
-
-    def test_execute_returns_stdout_tuple(self):
+    def test_execute_returns_stdout(self):
         cmd = 'echo stdout'
-        _, out, _ = util.execute(cmd)
-
+        out = util.execute(cmd)
         self.assertEquals('stdout\n', out)
 
-    def test_execute_returns_stderr_tuple(self):
-        cmd = 'echo stderr >&2'
-        _, _, err = util.execute(cmd)
+    def test_execute_raises_exception_on_error(self):
+        cmd = 'echo stderr >&2 && false'
+        with self.assertRaises(Exception):
+            util.execute(cmd)
 
-        self.assertEquals('stderr\n', err)
-
-    def test_clone_git_repo(self):
-        with patch('os.path.isdir') as mocked_isdir:
-            mocked_isdir.return_value = False
-            with patch('git.Repo.clone_from') as mocked:
-                util.clone_git_repo('git@github.com:foo/bar.git', '/tmp')
-
-                mocked.assert_called_once_with('git@github.com:foo/bar.git',
-                                               '/tmp/bar')
-
-    def test_clone_git_repo_does_not_clone_if_already_cloned(self):
-        with patch('os.path.isdir') as mocked_isdir:
-            mocked_isdir.return_value = True
-            with patch('git.Repo.clone_from') as mocked:
-                util.clone_git_repo('git@github.com:foo/bar.git', '/tmp/')
-
-                assert not mocked.called
+    def test_nonzero_exit_code(self):
+        cmd = 'echo stdout && false'
+        out = util.execute(cmd, exit=1)
+        self.assertEquals('stdout\n', out)

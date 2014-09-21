@@ -18,21 +18,19 @@
 import os
 import subprocess
 
-from git import Repo
-import giturlparse
-
 from giftwrap import log
 
 LOG = log.get_logger()
 
 
-def execute(command, cwd=None):
+def execute(command, cwd=None, exit=0):
     """
     Executes a command in a subprocess.  Returns a tuple of
     (exitcode, out, err).
 
     :param command: Command string to execute.
     :param cwd: Directory to execute from.
+    :param exit: The expected exit code.
     """
 
     original_dir = None
@@ -58,13 +56,8 @@ def execute(command, cwd=None):
         os.chdir(original_dir)
         LOG.debug("Changed directory back to %s", original_dir)
 
-    return exitcode, out, err
+    if exitcode != exit:
+        raise Exception("Failed to run '%s': rc: %d, out: '%s', err: '%s'" %
+                        (command, exitcode, out, err))
 
-
-def clone_git_repo(repo, checkout_dir):
-    parsedrepo = giturlparse.parse(repo, False)
-    directory = os.path.join(checkout_dir, parsedrepo.repo)
-    if not os.path.isdir(directory):
-        Repo.clone_from(repo, directory)
-
-    return directory
+    return out
