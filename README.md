@@ -14,6 +14,9 @@ Inspired by some of the work I had done to create [omnibus-openstack](https://gi
 
 With all of this in mind, it seemed to me that we already had all of the information that we already needed to create system-native (ie. rpm, deb) packages that had already been tested with the Gerrit CI infrastructure.  Hence, giftwrap.
 
+### Status
+[![Build Status](https://api.travis-ci.org/cloudcadre/giftwrap.png)](https://api.travis-ci.org/cloudcadre/giftwrap)
+
 Usage
 =====
 
