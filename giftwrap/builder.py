@@ -15,13 +15,6 @@
 # License for the specific language governing permissions and limitations
 
 import logging
-import os
-import sys
-
-from giftwrap.gerrit import GerritReview
-from giftwrap.openstack_git_repo import OpenstackGitRepo
-from giftwrap.package import Package
-from giftwrap.util import execute
 
 LOG = logging.getLogger(__name__)
 
@@ -30,39 +23,26 @@ class Builder(object):
 
     def __init__(self, spec):
         self._spec = spec
+        self.settings = spec.settings
+
+    def _build(self):
+        raise NotImplementedError()
+
+    def _validate_settings(self):
+        raise NotImplementedError()
 
     def build(self):
-        """ this is where all the magic happens """
+        self._validate_settings()
+        self._build()
 
-        try:
-            spec = self._spec
-            for project in self._spec.projects:
-                LOG.info("Beginning to build '%s'", project.name)
-                os.makedirs(project.install_path)
 
-                LOG.info("Fetching source code for '%s'", project.name)
-                repo = OpenstackGitRepo(project.giturl, project.gitref)
-                repo.clone(project.install_path)
-                review = GerritReview(repo.change_id, project.git_path)
+from giftwrap.builders.package_builder import PackageBuilder
+from giftwrap.builders.docker_builder import DockerBuilder
 
-                LOG.info("Creating the virtualenv for '%s'", project.name)
-                execute(project.venv_command, project.install_path)
 
-                LOG.info("Installing '%s' pip dependencies to the virtualenv",
-                         project.name)
-                execute(project.install_command %
-                        review.build_pip_dependencies(string=True),
-                        project.install_path)
-
-                LOG.info("Installing '%s' to the virtualenv", project.name)
-                execute(".venv/bin/python setup.py install",
-                        project.install_path)
-
-                if not spec.settings.all_in_one:
-                    pkg = Package(project.package_name, project.version,
-                                  project.install_path, True)
-                    pkg.build()
-
-        except Exception as e:
-            LOG.exception("Oops. Something went wrong. Error was:\n%s", e)
-            sys.exit(-1)
+def create_builder(spec):
+    if spec.settings.build_type == 'package':
+        return PackageBuilder(spec)
+    elif spec.settings.build_type == 'docker':
+        return DockerBuilder(spec)
+    raise Exception("Unknown build_type: '%s'", spec.settings.build_type)

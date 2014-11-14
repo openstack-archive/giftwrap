@@ -1,22 +1,23 @@
 ---
 settings:
-  package_name_format: 'giftwrap-openstack-{{project.name}}'
-  version: '1.0-icehouse'
+  package_name_format: 'openstack-{{project.name}}-{{version}}'
+  build_type: docker
+  version: '9.0-bbc5'
   base_path: '/opt/giftwrap/openstack-{{version}}/'
 
 projects:
-  - name: keystone
-    gitref: stable/icehouse
+#  - name: keystone
+#    gitref: stable/icehouse
   - name: glance
     gitref: stable/icehouse
-  - name: nova
-    gitref: stable/icehouse
-  - name: cinder
-    gitref: stable/icehouse
-  - name: horizon
-    gitref: stable/icehouse
+#  - name: nova
+#    gitref: stable/icehouse
+#  - name: cinder
+#    gitref: stable/icehouse
+#  - name: horizon
+#    gitref: stable/icehouse
 
-  - name: python-keystoneclient
-  - name: python-glanceclient
-  - name: python-novaclient
-  - name: python-cinderclient
+#  - name: python-keystoneclient
+#  - name: python-glanceclient
+#  - name: python-novaclient
+#  - name: python-cinderclient

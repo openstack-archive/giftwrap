@@ -18,8 +18,9 @@ import argparse
 import logging
 import sys
 
+import giftwrap.builder
+
 from giftwrap.build_spec import BuildSpec
-from giftwrap.builder import Builder
 from giftwrap.color import ColorStreamHandler
 
 LOG = logging.getLogger(__name__)
@@ -44,7 +45,7 @@ def build(args):
             manifest = fh.read()
 
         buildspec = BuildSpec(manifest)
-        builder = Builder(buildspec)
+        builder = giftwrap.builder.create_builder(buildspec)
         builder.build()
     except Exception as e:
         LOG.exception("Oops something went wrong: %s", e)

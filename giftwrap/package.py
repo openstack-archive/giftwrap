@@ -26,11 +26,12 @@ SUPPORTED_DISTROS = {
 
 class Package(object):
 
-    def __init__(self, name, version, path, include_src=True):
+    def __init__(self, name, version, path, include_src=True, overwrite=False):
         self.name = name
         self.version = version
         self.path = path
         self.include_src = include_src
+        self.overwrite = overwrite
 
     def build(self):
         distro = platform.linux_distribution()[0]
@@ -39,6 +40,8 @@ class Package(object):
                             distro)
         target = SUPPORTED_DISTROS[distro]
 
+        if self.overwrite:
+            overwrite = '-f'
         # not wrapping in a try block - handled by caller
-        execute("fpm -s dir -t %s -n %s -v %s %s" %
-                (target, self.name, self.version, self.path))
+        execute("fpm %s -s dir -t %s -n %s -v %s %s" %
+                (overwrite, target, self.name, self.version, self.path))

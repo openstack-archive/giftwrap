@@ -1,0 +1,12 @@
+FROM {{ base_image }}
+{% if maintainer -%}
+MAINTAINER {{ maintainer }}
+{% endif %}
+
+{% for k,v in envvars.iteritems() -%}
+ENV {{ k }} {{ v }}
+{% endfor -%}
+
+{% for command in commands -%}
+RUN {{ command }}
+{% endfor %}

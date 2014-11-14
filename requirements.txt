@@ -7,3 +7,4 @@ pyyaml
 jinja2
 requests
 pygerrit
+docker-py

@@ -36,7 +36,7 @@ def execute(command, cwd=None, exit=0):
     if cwd:
         original_dir = os.getcwd()
         os.chdir(cwd)
-        LOG.debug("Changed directory to %s", cwd)
+        LOG.info("Changed directory to %s", cwd)
 
     LOG.info("Running: '%s'", command)
     process = subprocess.Popen(command,
@@ -48,12 +48,12 @@ def execute(command, cwd=None, exit=0):
     (out, err) = process.communicate()
     exitcode = process.wait()
 
-    LOG.debug("Command exitted with rc: %s; STDOUT: %s; STDERR: %s" %
+    LOG.info("Command exitted with rc: %s; STDOUT: %s; STDERR: %s" %
               (exitcode, out, err))
 
     if cwd:
         os.chdir(original_dir)
-        LOG.debug("Changed directory back to %s", original_dir)
+        LOG.info("Changed directory back to %s", original_dir)
 
     if exitcode != exit:
         raise Exception("Failed to run '%s': rc: %d, out: '%s', err: '%s'" %

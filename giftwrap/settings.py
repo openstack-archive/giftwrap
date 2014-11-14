@@ -14,6 +14,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 
+DEFAULT_BUILD_TYPE = 'package'
+
 
 class Settings(object):
 
@@ -22,14 +24,17 @@ class Settings(object):
         'base_path': '/opt/openstack'
     }
 
-    def __init__(self, package_name_format=None, version=None,
-                 base_path=None, all_in_one=False):
+    def __init__(self, build_type=DEFAULT_BUILD_TYPE,
+                 package_name_format=None, version=None,
+                 base_path=None, all_in_one=False, force_overwrite=False):
         if not version:
             raise Exception("'version' is a required settings")
+        self.build_type = build_type
         self._package_name_format = package_name_format
         self.version = version
         self._base_path = base_path
         self.all_in_one = all_in_one
+        self.force_overwrite = force_overwrite
 
     @property
     def package_name_format(self):

@@ -65,7 +65,7 @@ class OpenstackGitRepo(object):
         self._committed_date = None
 
     def clone(self, outdir):
-        LOG.debug("Cloning '%s' to '%s'", self.url, outdir)
+        LOG.info("Cloning '%s' to '%s'", self.url, outdir)
         self._repo = Repo.clone_from(self.url, outdir)
         git = self._repo.git
         git.checkout(self.ref)
@@ -83,6 +83,6 @@ class OpenstackGitRepo(object):
                 raise Exception("Unable to find commit for date %s",
                                 datetime.datetime.fromtimestamp(date))
             git = self._repo.git
-            LOG.debug("Reset repo '%s' to commit at '%s'", self.url,
-                      time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(date)))
+            LOG.info("Reset repo '%s' to commit at '%s'", self.url,
+                     time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(date)))
             git.checkout(commit_date_sha)
