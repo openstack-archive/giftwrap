@@ -21,24 +21,26 @@ import sys
 from giftwrap.color import ColorStreamHandler
 
 NAME = 'giftwrap'
-logger = None
+_logger = None
 
 
 def get_logger():
-    global logger
+    global _logger
 
-    if logger:
-        return logger
 
-    logger = logging.getLogger(NAME)
+    if _logger:
+        return _logger
+
+    _logger = logging.getLogger(NAME)
     log_handler = ColorStreamHandler(sys.stdout)
     fmt = logging.Formatter(fmt='%(asctime)s %(levelname)s: %(message)s',
                             datefmt='%F %H:%M:%S')
     log_handler.setFormatter(fmt)
-    logger.addHandler(log_handler)
-    logger.setLevel(logging.INFO)
+    _logger.addHandler(log_handler)
+    _logger.setLevel(logging.INFO)
+    _logger.propagate = False
 
-    return logger
+    return _logger
 
 
 def set_level_debug():
