@@ -15,12 +15,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
 import os
 import subprocess
 
-from giftwrap import log
-
-LOG = log.get_logger()
+LOG = logging.getLogger(__name__)
 
 
 def execute(command, cwd=None, exit=0):

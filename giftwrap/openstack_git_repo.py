@@ -15,13 +15,13 @@
 # License for the specific language governing permissions and limitations
 
 import datetime
+import logging
 import re
 import time
 
-from giftwrap import log
 from git import Repo
 
-LOG = log.get_logger()
+LOG = logging.getLogger(__name__)
 
 
 class OpenstackGitRepo(object):

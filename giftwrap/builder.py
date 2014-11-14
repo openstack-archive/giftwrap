@@ -14,16 +14,16 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 
+import logging
 import os
 import sys
 
-from giftwrap import log
 from giftwrap.gerrit import GerritReview
 from giftwrap.openstack_git_repo import OpenstackGitRepo
 from giftwrap.package import Package
 from giftwrap.util import execute
 
-LOG = log.get_logger()
+LOG = logging.getLogger(__name__)
 
 
 class Builder(object):

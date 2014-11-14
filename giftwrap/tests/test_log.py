@@ -15,17 +15,18 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
 import unittest2 as unittest
 
 from nose.plugins.logcapture import LogCapture
-from giftwrap import log
 
 
 class TestLog(unittest.TestCase):
     def test_get_logger(self):
         lc = LogCapture()
         lc.begin()
-        logger = log.get_logger()
+        logger = logging.getLogger('giftwrap')
+        logger.setLevel(logging.INFO)
         logger.debug('test-debug')
         logger.info('test-info')
         lc.end()
@@ -35,8 +36,8 @@ class TestLog(unittest.TestCase):
     def test_get_logger_debug(self):
         lc = LogCapture()
         lc.begin()
-        logger = log.get_logger()
-        log.set_level_debug()
+        logger = logging.getLogger('giftwrap')
+        logger.setLevel(logging.DEBUG)
         logger.info('test-info')
         logger.debug('test-debug')
         lc.end()

@@ -15,13 +15,24 @@
 #    License for the specific language governing permissions and limitations
 
 import argparse
+import logging
 import sys
 
-from giftwrap import log
 from giftwrap.build_spec import BuildSpec
 from giftwrap.builder import Builder
+from giftwrap.color import ColorStreamHandler
 
-LOG = log.get_logger()
+LOG = logging.getLogger(__name__)
+
+
+def _setup_logger(level=logging.INFO):
+    logger = logging.getLogger()
+    logger.setLevel(level)
+    log_handler = ColorStreamHandler(sys.stdout)
+    fmt = logging.Formatter(fmt='%(asctime)s %(name)s %(levelname)s: '
+                            '%(message)s', datefmt='%F %H:%M:%S')
+    log_handler.setFormatter(fmt)
+    logger.addHandler(log_handler)
 
 
 def build(args):
@@ -36,7 +47,7 @@ def build(args):
         builder = Builder(buildspec)
         builder.build()
     except Exception as e:
-        LOG.exception("Unable to parse manifest. Error: %s", e)
+        LOG.exception("Oops something went wrong: %s", e)
         sys.exit(-1)
 
 
@@ -56,8 +67,10 @@ def main():
 
     args = parser.parse_args()
 
+    log_level = logging.INFO
     if args.debug:
-        log.set_level_debug()
+        log_level = logging.DEBUG
+    _setup_logger(log_level)
 
     args.func(args)
 
