@@ -40,13 +40,19 @@ class PackageBuilder(Builder):
 
     def _build(self):
         spec = self._spec
-        for project in self._spec.projects:
+
+        for project in spec.projects:
             LOG.info("Beginning to build '%s'", project.name)
+
+            # if anything is in our way, see if we can get rid of it
             if (os.path.exists(project.install_path) and
                spec.settings.force_overwrite):
                 LOG.info("force_overwrite is set, so removing "
                          "existing path '%s'" % project.install_path)
                 shutil.rmtree(project.install_path)
+            else:
+                raise Exception("Install path '%s' already exists" %
+                                project.install_path)
             os.makedirs(project.install_path)
 
             LOG.info("Fetching source code for '%s'", project.name)
