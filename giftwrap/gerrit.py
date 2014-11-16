@@ -49,11 +49,11 @@ class GerritReview(object):
                 if line.endswith("pip freeze"):
                     freeze_found = True
                 continue
-            elif re.match('[\w\-]+==.+', line) or line.startswith('-e'):
+            elif re.match('[\w\-]+==.+', line) and not line.startswith('-e'):
                 dependencies.append(line)
 
         if string:
-            return ('\n').join(dependencies)
+            return (' ').join(dependencies)
         return dependencies
 
     def _get_rest_client(self):
