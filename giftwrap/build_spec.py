@@ -22,8 +22,9 @@ from giftwrap.settings import Settings
 
 class BuildSpec(object):
 
-    def __init__(self, manifest):
+    def __init__(self, manifest, version):
         self._manifest = yaml.load(manifest)
+        self.version = version
         self.settings = Settings.factory(self._manifest['settings'])
         self.projects = self._render_projects()
 
@@ -32,5 +33,6 @@ class BuildSpec(object):
         if 'projects' in self._manifest:
             for project in self._manifest['projects']:
                 projects.append(OpenstackProject.factory(self.settings,
-                                                         project))
+                                                         project,
+                                                         self.version))
         return projects
