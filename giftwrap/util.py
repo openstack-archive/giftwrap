@@ -49,7 +49,7 @@ def execute(command, cwd=None, exit=0):
     exitcode = process.wait()
 
     LOG.debug("Command exitted with rc: %s; STDOUT: %s; STDERR: %s" %
-             (exitcode, out, err))
+              (exitcode, out, err))
 
     if cwd:
         os.chdir(original_dir)
