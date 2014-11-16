@@ -16,22 +16,27 @@
 
 import datetime
 import logging
+import os
 import re
 import time
+import urlparse
 
+from giftwrap.openstack_commit import OpenstackCommit
 from git import Repo
 
 LOG = logging.getLogger(__name__)
 
 
 class OpenstackGitRepo(object):
-    def __init__(self, url, ref='master'):
+
+    def __init__(self, url, project=None, branch='master',
+                 metadata_cache_dir=None):
         self.url = url
-        self.ref = ref
+        self._project = project
+        self.branch = branch
         self._repo = None
-        self._head = None
-        self._change_id = None
-        self._committed_date = None
+        self._metadata_cache_dir = metadata_cache_dir
+        self._head_commit = None
 
     @property
     def cloned(self):
@@ -39,50 +44,79 @@ class OpenstackGitRepo(object):
 
     @property
     def head(self):
-        if not self._head and self._repo:
-            self._head = self._repo.head.commit.hexsha
-        return self._head
+        if not self._head_commit and self._repo:
+            self._head_commit = OpenstackCommit(self._repo.head.commit,
+                                                self.project, self.branch,
+                                                self._cache_dir())
+        return self._head_commit
 
     @property
-    def change_id(self):
-        if not self._change_id and self._repo:
-            for commit in self._repo.iter_commits():
-                match = re.search('Change-Id:\s*(I\w+)', commit.message)
-                if match:
-                    self._change_id = match.group(1)
-                    break
-        return self._change_id
-
-    @property
-    def committed_date(self):
-        if not self._committed_date and self._repo:
-            self._committed_date = self._repo.head.commit.committed_date
-        return self._committed_date
-
-    def _invalidate_attrs(self):
-        self._head = None
-        self._change_id = None
-        self._committed_date = None
+    def project(self):
+        if not self._project:
+            parsed_url = urlparse.urlparse(self.url)
+            project = os.path.splitext(parsed_url.path)[0]
+            self._project = re.sub(r'^/', '', project)
+        return self._project
 
     def clone(self, outdir):
-        LOG.info("Cloning '%s' to '%s'", self.url, outdir)
-        self._repo = Repo.clone_from(self.url, outdir)
+        LOG.debug("Cloning '%s' to '%s'", self.url, outdir)
+        self._repo = Repo.clone_from(self.url, outdir, recursive=True)
         git = self._repo.git
-        git.checkout(self.ref)
+        git.checkout(self.branch)
         self._invalidate_attrs()
+
+    def checkout_branch(self, branch, update=True):
+        if not self._repo:
+            raise Exception("Cannot checkout on non-existent repo")
+        LOG.debug("Checking out branch: %s (update: %s)", branch, update)
+        self._repo.git.checkout(branch)
+        self._invalidate_attrs()
+        self.branch = branch
+        if update:
+            self._repo.git.pull('origin', branch)
+
+    @property
+    def branches(self):
+        branches = []
+        for ref in self._repo.remotes.origin.refs:
+            branches.append(re.sub('^\w*/', '', ref.name))
+        return branches
+
+    def __iter__(self):
+        if not self._repo:
+            raise Exception("iterator called before clone")
+        self._commit_iterator = self._repo.iter_commits()
+        return self
+
+    def next(self):
+        print self._cache_dir()
+        return OpenstackCommit(next(self._commit_iterator),
+                               self.project, self.branch,
+                               self._cache_dir())
+
+    def _cache_dir(self):
+        if self._metadata_cache_dir:
+            return os.path.join(self._metadata_cache_dir,
+                                self.project, self.branch)
+        return None
+
+    def _invalidate_attrs(self):
+        self._head_commit = None
+        self._commit_iterator = None
 
     def reset_to_date(self, date):
         if self._repo:
             commit_date_sha = None
             for commit in self._repo.iter_commits():
                 if commit.committed_date >= date:
-                    commit_date_sha = commit.hexsha
+                    continue
                 elif commit.committed_date < date:
+                    commit_date_sha = commit.hexsha
                     break
             if not commit_date_sha:
                 raise Exception("Unable to find commit for date %s",
                                 datetime.datetime.fromtimestamp(date))
             git = self._repo.git
-            LOG.info("Reset repo '%s' to commit at '%s'", self.url,
-                     time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(date)))
+            LOG.debug("Reset repo '%s' to commit at '%s'", self.url,
+                      time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(date)))
             git.checkout(commit_date_sha)
