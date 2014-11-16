@@ -24,8 +24,8 @@ DEFAULT_GITURL = {
     'openstack': 'https://git.openstack.org/openstack/',
     'stackforge': 'https://github.com/stackforge/'
 }
-DEFAULT_VENV_COMMAND = "virtualenv .venv"
-DEFAULT_INSTALL_COMMAND = ".venv/bin/pip install --extra-index http://pypi.openstack.org/openstack/ %s"  # noqa
+DEFAULT_VENV_COMMAND = "virtualenv ."
+DEFAULT_INSTALL_COMMAND = "./bin/pip install %s"  # noqa
 
 TEMPLATE_VARS = ('name', 'version', 'gitref', 'stackforge')
 
@@ -120,5 +120,5 @@ class OpenstackProject(object):
         return t.render(self._template_vars())
 
     @staticmethod
-    def factory(settings, project_dict):
-        return OpenstackProject(settings, **project_dict)
+    def factory(settings, project_dict, version):
+        return OpenstackProject(settings, version=version, **project_dict)
