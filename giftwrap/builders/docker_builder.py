@@ -111,7 +111,8 @@ class DockerBuilder(Builder):
         self.envvars['PATH'] = "%s:$PATH" % path
 
     def _render_dockerfile(self, extra_vars):
-        template_vars = self.__dict__.update(extra_vars)
+        template_vars = self.__dict__
+        template_vars.update(extra_vars)
         template_loader = jinja2.FileSystemLoader(searchpath='/')
         template_env = jinja2.Environment(loader=template_loader)
         template = template_env.get_template(self.template)
