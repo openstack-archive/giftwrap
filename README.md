@@ -14,8 +14,9 @@ Inspired by some of the work I had done to create [omnibus-openstack](https://gi
 
 With all of this in mind, it seemed to me that we already had all of the information that we already needed to create system-native (ie. rpm, deb) packages that had already been tested with the Gerrit CI infrastructure.  Hence, giftwrap.
 
-### Status
-[![Build Status](https://api.travis-ci.org/cloudcadre/giftwrap.png)](https://api.travis-ci.org/cloudcadre/giftwrap)
+Status
+------
+[![Build Status](https://api.travis-ci.org/blueboxgroup/giftwrap.png)](https://travis-ci.org/blueboxgroup/giftwrap)
 
 Usage
 =====
@@ -24,29 +25,29 @@ Usage
     $ giftwrap -h
 
 Dependencies
-============
+------------
 
 * `Vagrant`
 * `fpm`
 
 Development
-===========
+-----------
 
-    $ git clone git@github.com:cloudcadre/giftwrap.git
+    $ git clone https://github.com/blueboxgroup/giftwrap.git
     $ vagrant up
 
 Testing
-=======
+-------
 
     $ make test
 
 Supports
-========
+--------
 * Jinja2 templating - change your build by changing variables; not your manifest
 * versioned paths - this allows you to run services side by side; easing the upgrade process.
 
 How It Works
-============
+------------
 giftwrap is pretty simple. The basic flow is something like this:
 1. Create a YAML manifest with the packages you would like to build. See sample.yml
 2. Run:
@@ -62,13 +63,13 @@ giftwrap is pretty simple. The basic flow is something like this:
 9. An [fpm](https://github.com/jordansissel/fpm) package will be built from the intersection of the python install and system dependencies
 
 TODO
-====
+----
 * Provide option for source removal; package only the executables
 * Allow for additional pip dependencies, alternate pip dependency versions, and even user-defined pip dependencies
 * Allow for additional/alternate system package dependencies
 
 License
-=======
+-------
 |                      |                                                    |
 |:---------------------|:---------------------------------------------------|
 | **Authors**          |  John Dewey (<john@dewey.ws>)                      |
