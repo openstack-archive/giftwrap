@@ -1,6 +1,6 @@
 giftwrap
 ========
-A tool for creating bespoke system-native OpenStack packages.
+A tool for creating bespoke system-native OpenStack artifacts.
 
 Anyone running OpenStack at scale typically crafts their own software distribution mechanism. There may be many reasons for this, but chief among them seem to be the desire to ship security patches, deliver custom code, lock their releases at a revision of their choosing, or just generally stay closer to trunk.
 
@@ -12,7 +12,7 @@ Long story short, this sucks.
 
 Inspired by some of the work I had done to create [omnibus-openstack](https://github.com/craigtracey/omnibus-openstack), I decided to do things slightly differently. While omnibus-openstack met most of my needs there were a few problems. First, the project was written in Ruby. While this, in my opinion, is not a problem, this makes it somewhat unapproachable to a vast segment of OpenStack users and operators. Second, the packages are HUGE. Again, while this may not be a real problem for many, the reason they are huge is that they manage all of the system level dependencies as well: things like openssl, libvirt, etc. These are not things that many folks typically want to be responsible for managing; whether for security or even complexity reasons.
 
-With all of this in mind, it seemed to me that we already had all of the information that we already needed to create system-native (ie. rpm, deb) packages that had already been tested with the Gerrit CI infrastructure.  Hence, giftwrap.
+With all of this in mind, it seemed to me that we already had all of the information that we already needed to create system-native (ie. rpm, deb, and even Docker) artifacts that had already been tested with the Gerrit CI infrastructure.  Hence, giftwrap.
 
 Status
 ------
@@ -29,6 +29,7 @@ Dependencies
 
 * `Vagrant`
 * `fpm`
+* `docker` (optional)
 
 Development
 -----------
@@ -52,7 +53,7 @@ giftwrap is pretty simple. The basic flow is something like this:
 1. Create a YAML manifest with the packages you would like to build. See sample.yml
 2. Run:
 ```
- giftwrap build -m <manifest>
+ giftwrap build -m <manifest> [-v <version>]
 ```
 3. giftwrap will clone the git repo and git ref that you specify for each of the OpenStack projects
 4. giftwrap will find the closest Gerrit Change-Id and retrieve it's build logs
