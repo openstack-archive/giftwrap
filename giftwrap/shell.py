@@ -16,6 +16,7 @@
 
 import argparse
 import logging
+import signal
 import sys
 
 import giftwrap.builder
@@ -38,6 +39,8 @@ def _setup_logger(level=logging.INFO):
 
 def build(args):
     """ the entry point for all build subcommand tasks """
+    builder = None
+    fail = False
     try:
         manifest = None
 
@@ -46,9 +49,20 @@ def build(args):
 
         buildspec = BuildSpec(manifest, args.version)
         builder = giftwrap.builder.create_builder(buildspec)
+
+        def _signal_handler(*args):
+            LOG.info("Process interrrupted. Cleaning up.")
+            builder.cleanup()
+            sys.exit()
+        signal.signal(signal.SIGINT, _signal_handler)
+
         builder.build()
     except Exception as e:
         LOG.exception("Oops something went wrong: %s", e)
+        fail = True
+
+    builder.cleanup()
+    if fail:
         sys.exit(-1)
 
 

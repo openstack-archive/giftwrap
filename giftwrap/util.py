@@ -60,3 +60,9 @@ def execute(command, cwd=None, exit=0):
                         (command, exitcode, out, err))
 
     return out
+
+
+def relative_pathify(path):
+    if path.startswith('/'):
+        return path[1:]
+    return path

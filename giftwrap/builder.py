@@ -25,15 +25,21 @@ class Builder(object):
         self._spec = spec
         self.settings = spec.settings
 
+    def _validate_settings(self):
+        raise NotImplementedError()
+
     def _build(self):
         raise NotImplementedError()
 
-    def _validate_settings(self):
+    def _cleanup(self):
         raise NotImplementedError()
 
     def build(self):
         self._validate_settings()
         self._build()
+
+    def cleanup(self):
+        self._cleanup()
 
 
 from giftwrap.builders.package_builder import PackageBuilder
