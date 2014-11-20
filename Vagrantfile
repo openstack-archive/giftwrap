@@ -10,7 +10,7 @@ Vagrant.configure('2') do |config|
 
   config.vm.provision 'shell', inline: <<-EOF
     apt-get update
-    apt-get install -y build-essential ruby1.9.1-dev git python-pip python-dev python-virtualenv libxml2-dev libxslt-dev libffi-dev libmysqlclient-dev libpq-dev
+    apt-get install -y build-essential ruby1.9.1-dev git python-pip python-dev python-virtualenv libxml2-dev libxslt-dev libffi-dev libmysqlclient-dev libpq-dev libsqlite3-dev
     gem install --no-ri --no-rdoc fpm
     cd /vagrant
     python setup.py install
