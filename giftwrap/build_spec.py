@@ -22,10 +22,14 @@ from giftwrap.settings import Settings
 
 class BuildSpec(object):
 
-    def __init__(self, manifest, version):
+    def __init__(self, manifest, version, build_type=None):
         self._manifest = yaml.load(manifest)
         self.version = version
-        self.settings = Settings.factory(self._manifest['settings'])
+        self.build_type = build_type
+        manifest_settings = self._manifest['settings']
+        if build_type:
+            manifest_settings['build_type'] = build_type
+        self.settings = Settings.factory(manifest_settings)
         self.projects = self._render_projects()
 
     def _render_projects(self):
