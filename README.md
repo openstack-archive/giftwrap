@@ -63,6 +63,28 @@ giftwrap is pretty simple. The basic flow is something like this:
 8. giftwrap will check [devstack](https://devstack.org) for the system dependencies necessary for that project (to be done)
 9. An [fpm](https://github.com/jordansissel/fpm) package will be built from the intersection of the python install and system dependencies
 
+DockerDockerDockerDockerDocker
+------------------------------
+
+This shows how to use docker-in-docker to build packages really fast.  the example shows doing it within the provided vagrant instance.  but this is for illustration purposes,  it should be runnable from any machine with docker installed.
+
+
+Build a giftwrap docker container like this:
+
+```
+$ docker build -t bluebox/giftwrap .
+```
+
+Run the giftwrap docker image and map in your docker socket and your manifest file:
+
+```
+$ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v /vagrant/sample.yml:/tmp/manifest.yml  bluebox/giftwrap
+$ docker images openstack-9.0
+REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+openstack-9.0       bbc6                44c37c8d9672        10 minutes ago      499.5 MB
+
+```
+
 TODO
 ----
 * Provide option for source removal; package only the executables
@@ -75,9 +97,11 @@ License
 |:---------------------|:---------------------------------------------------|
 | **Authors**          |  John Dewey (<john@dewey.ws>)                      |
 |                      |  Craig Tracey (<craigtracey@gmail.com>)            |
+|                      |  Paul Czarkowski (<username.taken@gmail.com>)      |
 |                      |                                                    |
 | **Copyright**        |  Copyright (c) 2014, John Dewey                    |
 |                      |  Copyright (c) 2014, Craig Tracey                  |
+|                      |  Copyright (c) 2014, Paul Czarkowski               |
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
