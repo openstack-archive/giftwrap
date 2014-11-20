@@ -41,6 +41,7 @@ class Package(object):
                             distro)
         target = SUPPORTED_DISTROS[distro]
 
+        overwrite = ''
         if self.overwrite:
             overwrite = '-f'
 
