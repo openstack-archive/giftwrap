@@ -60,7 +60,7 @@ class OpenstackGitRepo(object):
 
     def clone(self, outdir):
         LOG.debug("Cloning '%s' to '%s'", self.url, outdir)
-        self._repo = Repo.clone_from(self.url, outdir, recursive=True)
+        self._repo = Repo.clone_from(self.url, outdir, recursive=True, depth=1)
         git = self._repo.git
         git.checkout(self.branch)
         self._invalidate_attrs()

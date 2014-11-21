@@ -81,9 +81,11 @@ class DockerBuilder(Builder):
                                 ' '.join(project.system_dependencies))
 
             project_src_path = os.path.join(src_path, project.name)
-            commands.append('git clone %s -b %s %s' % (project.giturl,
-                                                       project.gitref,
-                                                       project_src_path))
+            commands.append('git clone --depth 1 %s -b %s %s' %
+                            (project.giturl, project.gitref, project_src_path))
+            commands.append('COMMIT=`git rev-parse HEAD` && echo "%s $COMMIT" '
+                            '> %s/gitinfo' % (project.giturl,
+                                              project.install_path))
             commands.append('mkdir -p %s' %
                             os.path.dirname(project.install_path))
             commands.append('virtualenv --system-site-packages %s' %

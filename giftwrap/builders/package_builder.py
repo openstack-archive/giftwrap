@@ -75,6 +75,11 @@ class PackageBuilder(Builder):
             repo = OpenstackGitRepo(project.giturl, project.gitref)
             repo.clone(project_src_path)
 
+            # tell package users where this came from
+            gitinfo_file = os.path.join(install_path, 'gitinfo')
+            with open(gitinfo_file, 'w') as fh:
+                fh.write("%s %s" % (project.giturl, repo.head.hexsha))
+
             # start building the virtualenv for the project
             LOG.info("Creating the virtualenv for '%s'", project.name)
             execute(project.venv_command, install_path)
