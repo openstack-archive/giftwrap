@@ -26,15 +26,14 @@ class Settings(object):
 
     def __init__(self, build_type=DEFAULT_BUILD_TYPE,
                  package_name_format=None, version=None,
-                 base_path=None, all_in_one=False,
-                 gerrit_dependencies=True, force_overwrite=False):
+                 base_path=None, gerrit_dependencies=True,
+                 force_overwrite=False):
         if not version:
             raise Exception("'version' is a required settings")
         self.build_type = build_type
         self._package_name_format = package_name_format
         self.version = version
         self._base_path = base_path
-        self.all_in_one = all_in_one
         self.gerrit_dependencies = gerrit_dependencies
         self.force_overwrite = force_overwrite
 

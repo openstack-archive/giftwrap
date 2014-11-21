@@ -46,6 +46,7 @@ APT_REQUIRED_PACKAGES = [
     'python-pip',
     'build-essential'
 ]
+DEFAULT_SRC_PATH = '/opt/openstack'
 
 
 class DockerBuilder(Builder):
@@ -59,8 +60,10 @@ class DockerBuilder(Builder):
         super(DockerBuilder, self).__init__(spec)
 
     def _validate_settings(self):
-        if not self.settings.all_in_one:
-            LOG.warn("The Docker builder does not support all-in-one")
+        pass
+
+    def _cleanup(self):
+        pass
 
     def _get_prep_commands(self):
         commands = []
@@ -69,7 +72,6 @@ class DockerBuilder(Builder):
         return commands
 
     def _get_build_commands(self, src_path):
-
         commands = []
         commands.append('mkdir -p %s' % src_path)
 
@@ -119,7 +121,7 @@ class DockerBuilder(Builder):
         return template.render(template_vars)
 
     def _build(self):
-        src_path = '/tmp/build'
+        src_path = DEFAULT_SRC_PATH
         commands = self._get_prep_commands()
         commands += self._get_build_commands(src_path)
         commands += self._get_cleanup_commands(src_path)
