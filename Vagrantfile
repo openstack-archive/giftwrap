@@ -9,8 +9,19 @@ Vagrant.configure('2') do |config|
   config.vm.box_url = GIFTWRAP_BUILDBOX_URL
 
   config.vm.provision 'shell', inline: <<-EOF
-    apt-get update
-    apt-get install -y build-essential ruby1.9.1-dev git python-pip python-dev python-virtualenv libxml2-dev libxslt-dev libffi-dev libmysqlclient-dev libpq-dev libsqlite3-dev
+    if [ -f /etc/lsb-release ]; then
+      . /etc/lsb-release
+      OS=$DISTRIB_ID
+    elif [ -f /etc/debian_version ]; then
+      OS=Debian
+    elif [ -f /etc/redhat-release ]; then
+      OS=RedHat
+    fi
+
+    if [ "$OS" == "Debian" ] || [ "$OS" == "Ubuntu" ]; then
+	/vagrant/scripts/prepare_debian.sh
+    fi
+
     gem install --no-ri --no-rdoc fpm
     cd /vagrant
     python setup.py install
