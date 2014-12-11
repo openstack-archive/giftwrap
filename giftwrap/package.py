@@ -16,13 +16,13 @@
 
 import os
 import platform
+import re
 
 from giftwrap.util import execute
 
 SUPPORTED_DISTROS = {
-    'Ubuntu': 'deb',
-    'Scientific Linux': 'rpm',
-    'CentOS': 'rpm'
+    'deb': ['Ubuntu'],
+    'rpm': ['Scientific Linux', 'CentOS.*']
 }
 
 
@@ -38,13 +38,17 @@ class Package(object):
         self.overwrite = overwrite
         self.dependencies = dependencies
 
-    def build(self):
-        distro = platform.linux_distribution()[0]
-        if distro not in SUPPORTED_DISTROS.keys():
-            raise Exception("Sorry, '%s' is an unsupported distribution" %
-                            distro)
-        target = SUPPORTED_DISTROS[distro]
+    def _get_platform_target(self):
+        current_distro = platform.linux_distribution()[0]
+        for pkgtype, distros in SUPPORTED_DISTROS.iteritems():
+            for distro in distros:
+                if re.match(distro, current_distro):
+                    return pkgtype
+        raise Exception("Sorry, '%s' is an unsupported distribution" %
+                        current_distro)
 
+    def build(self):
+        target = self._get_platform_target()
         overwrite = ''
         if self.overwrite:
             overwrite = '-f'
