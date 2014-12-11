@@ -101,6 +101,7 @@ class PackageBuilder(Builder):
             # now build the package
             pkg = Package(project.package_name, project.version, build_path,
                           relative_pathify(project.install_path),
+                          spec.settings.output_dir,
                           spec.settings.force_overwrite,
                           project.system_dependencies)
             pkg.build()
