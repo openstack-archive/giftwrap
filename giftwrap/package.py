@@ -21,7 +21,8 @@ from giftwrap.util import execute
 
 SUPPORTED_DISTROS = {
     'Ubuntu': 'deb',
-    'Scientific Linux': 'rpm'
+    'Scientific Linux': 'rpm',
+    'CentOS': 'rpm'
 }
 
 
