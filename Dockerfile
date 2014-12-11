@@ -1,7 +1,8 @@
-FROM python:2.7
+FROM ubuntu:precise
 
 RUN apt-get update && \
-    apt-get -yqq install build-essential ruby-dev ruby git python-pip libxml2-dev libxslt-dev libffi-dev libmysqlclient-dev libpq-dev
+    apt-get -yqq install build-essential ruby1.9.1 ruby1.9.1-dev python-dev \
+    rubygems1.9.1 git python-pip libxml2-dev libxslt-dev libffi-dev libmysqlclient-dev libpq-dev
 
 RUN gem install --no-ri --no-rdoc fpm
 
