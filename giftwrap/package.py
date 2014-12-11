@@ -14,6 +14,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 
+import os
 import platform
 
 from giftwrap.util import execute
@@ -26,12 +27,13 @@ SUPPORTED_DISTROS = {
 
 class Package(object):
 
-    def __init__(self, name, version, build_path, install_path,
+    def __init__(self, name, version, build_path, install_path, output_dir,
                  overwrite=False, dependencies=None):
         self.name = name
         self.version = version
         self.build_path = build_path
         self.install_path = install_path
+        self.output_dir = output_dir
         self.overwrite = overwrite
         self.dependencies = dependencies
 
@@ -50,7 +52,10 @@ class Package(object):
         if self.dependencies:
             deps = '-d %s' % (' -d '.join(self.dependencies))
 
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+
         # not wrapping in a try block - handled by caller
-        execute("fpm %s -s dir -t %s -n %s -v %s %s %s" % (overwrite, target,
-                self.name, self.version, deps, self.install_path),
-                self.build_path)
+        execute("fpm %s -s dir -t %s -n %s -v %s -C %s %s %s" % (overwrite,
+                target, self.name, self.version, self.build_path, deps,
+                self.install_path), self.output_dir)
