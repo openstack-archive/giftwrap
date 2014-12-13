@@ -22,7 +22,7 @@ import tempfile
 from giftwrap.gerrit import GerritReview
 from giftwrap.openstack_git_repo import OpenstackGitRepo
 from giftwrap.package import Package
-from giftwrap.util import execute, relative_pathify
+from giftwrap.util import execute
 
 LOG = logging.getLogger(__name__)
 
@@ -55,16 +55,23 @@ class PackageBuilder(Builder):
 
         self._tempdir = tempfile.mkdtemp(prefix='giftwrap')
         src_path = os.path.join(self._tempdir, 'src')
-        build_path = os.path.join(self._tempdir, 'build')
-        os.makedirs(build_path)
         LOG.debug("Temporary working directory: %s", self._tempdir)
 
         for project in spec.projects:
             LOG.info("Beginning to build '%s'", project.name)
 
-            install_path = os.path.join(build_path,
-                                        relative_pathify(project.install_path))
+            install_path = project.install_path
             LOG.debug("Installing '%s' to '%s'", project.name, install_path)
+
+            # if anything is in our way, see if we can get rid of it
+            if os.path.exists(install_path):
+                if spec.settings.force_overwrite:
+                    LOG.info("force_overwrite is set, so removing "
+                             "existing path '%s'" % install_path)
+                    shutil.rmtree(install_path)
+                else:
+                    raise Exception("Install path '%s' already exists" %
+                                    install_path)
             os.makedirs(install_path)
 
             # clone the project's source to a temporary directory
@@ -99,9 +106,8 @@ class PackageBuilder(Builder):
             execute("%s install pbr" % venv_pip_path)
 
             # now build the package
-            pkg = Package(project.package_name, project.version, build_path,
-                          relative_pathify(project.install_path),
-                          spec.settings.output_dir,
+            pkg = Package(project.package_name, project.version,
+                          install_path, spec.settings.output_dir,
                           spec.settings.force_overwrite,
                           project.system_dependencies)
             pkg.build()

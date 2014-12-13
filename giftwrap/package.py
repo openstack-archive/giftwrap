@@ -28,11 +28,10 @@ SUPPORTED_DISTROS = {
 
 class Package(object):
 
-    def __init__(self, name, version, build_path, install_path, output_dir,
+    def __init__(self, name, version, install_path, output_dir,
                  overwrite=False, dependencies=None):
         self.name = name
         self.version = version
-        self.build_path = build_path
         self.install_path = install_path
         self.output_dir = output_dir
         self.overwrite = overwrite
@@ -57,6 +56,6 @@ class Package(object):
             os.makedirs(self.output_dir)
 
         # not wrapping in a try block - handled by caller
-        execute("fpm %s -s dir -t %s -n %s -v %s -C %s %s %s" % (overwrite,
-                target, self.name, self.version, self.build_path, deps,
-                self.install_path), self.output_dir)
+        execute("fpm %s -s dir -t %s -n %s -v %s %s %s" % (overwrite,
+                target, self.name, self.version, deps, self.install_path),
+                self.output_dir)
