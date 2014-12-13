@@ -1,0 +1,11 @@
+---
+settings:
+  package_name_format: 'openstack-{{project.name}}-{{version}}'
+  build_type: package
+  version: '10.0-bbc1'
+  base_path: '/opt/bbc/openstack-{{version}}/'
+  force_overwrite: true
+
+projects:
+  - name: glance
+    gitref: stable/juno
