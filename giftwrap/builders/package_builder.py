@@ -79,7 +79,8 @@ class PackageBuilder(Builder):
             os.makedirs(project_src_path)
 
             LOG.info("Fetching source code for '%s'", project.name)
-            repo = OpenstackGitRepo(project.giturl, project.gitref)
+            repo = OpenstackGitRepo(project.giturl, project.name,
+                                    project.gitref)
             repo.clone(project_src_path)
 
             # tell package users where this came from
