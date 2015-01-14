@@ -107,7 +107,7 @@ class PackageBuilder(Builder):
                     LOG.warning("Project configuration does not seem to exist "
                                 "in source repo '%s'. Skipping.", project.name)
                 else:
-                    LOG.debug("Copying config from '%s' to '%s'", src_config, 
+                    LOG.debug("Copying config from '%s' to '%s'", src_config,
                               dest_config)
                     shutil.copytree(src_config, dest_config)
 
