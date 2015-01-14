@@ -100,6 +100,17 @@ class PackageBuilder(Builder):
             deps = " ".join(project.pip_dependencies)
             execute("%s install %s" % (venv_pip_path, deps))
 
+            if spec.settings.include_config:
+                src_config = os.path.join(project_src_path, 'etc')
+                dest_config = os.path.join(install_path, 'etc')
+                if not os.path.exists(src_config):
+                    LOG.warning("Project configuration does not seem to exist "
+                                "in source repo '%s'. Skipping.", project.name)
+                else:
+                    LOG.debug("Copying config from '%s' to '%s'", src_config, 
+                              dest_config)
+                    shutil.copytree(src_config, dest_config)
+
             if spec.settings.gerrit_dependencies:
                 self._install_gerrit_dependencies(repo, project, install_path)
 

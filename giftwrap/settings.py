@@ -29,7 +29,7 @@ class Settings(object):
     def __init__(self, build_type=DEFAULT_BUILD_TYPE,
                  package_name_format=None, version=None,
                  base_path=None, gerrit_dependencies=True,
-                 force_overwrite=False, output_dir=None):
+                 force_overwrite=False, output_dir=None, include_config=True):
         if not version:
             raise Exception("'version' is a required settings")
         self.build_type = build_type
@@ -39,6 +39,7 @@ class Settings(object):
         self.gerrit_dependencies = gerrit_dependencies
         self.force_overwrite = force_overwrite
         self._output_dir = output_dir
+        self.include_config = include_config
 
     @property
     def package_name_format(self):
