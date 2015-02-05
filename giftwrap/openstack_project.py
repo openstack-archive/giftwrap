@@ -33,14 +33,15 @@ TEMPLATE_VARS = ('name', 'version', 'gitref', 'stackforge')
 class OpenstackProject(object):
 
     def __init__(self, settings, name, version=None, gitref=None, giturl=None,
-                 venv_command=None, install_command=None, install_path=None,
-                 package_name=None, stackforge=False, system_dependencies=[],
-                 pip_dependencies=[]):
+                 gitdepth=None, venv_command=None, install_command=None,
+                 install_path=None, package_name=None, stackforge=False,
+                 system_dependencies=[], pip_dependencies=[]):
         self._settings = settings
         self.name = name
         self._version = version
         self._gitref = gitref
         self._giturl = giturl
+        self.gitdepth = gitdepth
         self._venv_command = venv_command
         self._install_command = install_command
         self._install_path = install_path

@@ -30,13 +30,14 @@ LOG = logging.getLogger(__name__)
 class OpenstackGitRepo(object):
 
     def __init__(self, url, project=None, branch='master',
-                 metadata_cache_dir=None):
+                 metadata_cache_dir=None, depth=None):
         self.url = url
         self._project = project
         self.branch = branch
         self._repo = None
         self._metadata_cache_dir = metadata_cache_dir
         self._head_commit = None
+        self._depth = depth
 
     @property
     def cloned(self):
@@ -60,7 +61,11 @@ class OpenstackGitRepo(object):
 
     def clone(self, outdir):
         LOG.debug("Cloning '%s' to '%s'", self.url, outdir)
-        self._repo = Repo.clone_from(self.url, outdir, recursive=True, depth=1)
+        kwargs = {'recursive': True}
+        if self._depth:
+            LOG.debug("Cloning with depth=%d", self._depth)
+            kwargs['depth'] = self._depth
+        self._repo = Repo.clone_from(self.url, outdir, **kwargs)
         git = self._repo.git
         git.checkout(self.branch)
         self._invalidate_attrs()

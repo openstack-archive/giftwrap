@@ -78,7 +78,8 @@ class PackageBuilder(Builder):
 
             LOG.info("Fetching source code for '%s'", project.name)
             repo = OpenstackGitRepo(project.giturl, project.name,
-                                    project.gitref)
+                                    project.gitref,
+                                    depth=project.gitdepth)
             repo.clone(project_src_path)
 
             # tell package users where this came from
