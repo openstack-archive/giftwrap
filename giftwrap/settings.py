@@ -23,12 +23,13 @@ class Settings(object):
 
     DEFAULTS = {
         'package_name_format': 'openstack-{{ project.name }}',
-        'base_path': '/opt/openstack'
+        'base_path': '/opt/openstack',
+        'install_path': '{{ base_path }}/{{ project.name }}'
     }
 
     def __init__(self, build_type=DEFAULT_BUILD_TYPE,
                  package_name_format=None, version=None,
-                 base_path=None, gerrit_dependencies=True,
+                 base_path=None, install_path=None, gerrit_dependencies=True,
                  force_overwrite=False, output_dir=None, include_config=True):
         if not version:
             raise Exception("'version' is a required settings")
@@ -36,6 +37,7 @@ class Settings(object):
         self._package_name_format = package_name_format
         self.version = version
         self._base_path = base_path
+        self._install_path = install_path
         self.gerrit_dependencies = gerrit_dependencies
         self.force_overwrite = force_overwrite
         self._output_dir = output_dir
@@ -48,6 +50,10 @@ class Settings(object):
     @property
     def base_path(self):
         return self._get_setting('base_path')
+
+    @property
+    def install_path(self):
+        return self._get_setting('install_path')
 
     @property
     def output_dir(self):
