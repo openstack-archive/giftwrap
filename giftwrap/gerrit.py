@@ -46,11 +46,15 @@ class GerritReview(object):
         for line in log.split('\n'):
             line = re.sub('.*\|\s*', '', line)
             if not freeze_found:
-                if line.endswith("pip freeze"):
+                if line.endswith("pip freeze") or line.endswith("pbr freeze"):
                     freeze_found = True
                 continue
             elif re.match('[\w\-]+==.+', line) and not line.startswith('-e'):
                 dependencies.append(line)
+
+        short_name = self.project.split('/')[1]
+        dependencies = filter(lambda x: not x.startswith(short_name + "=="),
+                              dependencies)
 
         if string:
             return (' ').join(dependencies)
