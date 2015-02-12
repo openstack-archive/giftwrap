@@ -19,15 +19,13 @@ import os
 import shutil
 import tempfile
 
+from giftwrap.builder import Builder
 from giftwrap.gerrit import GerritReview
 from giftwrap.openstack_git_repo import OpenstackGitRepo
 from giftwrap.package import Package
 from giftwrap.util import execute
 
 LOG = logging.getLogger(__name__)
-
-
-from giftwrap.builder import Builder
 
 
 class PackageBuilder(Builder):
