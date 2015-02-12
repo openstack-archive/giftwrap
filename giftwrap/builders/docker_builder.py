@@ -15,6 +15,7 @@
 # License for the specific language governing permissions and limitations
 
 import docker
+import jinja2
 import json
 import logging
 import os
@@ -24,8 +25,6 @@ import tempfile
 from giftwrap.builder import Builder
 
 LOG = logging.getLogger(__name__)
-
-import jinja2
 
 DEFAULT_TEMPLATE_FILE = os.path.join(os.path.dirname(
                                      os.path.dirname(__file__)),
