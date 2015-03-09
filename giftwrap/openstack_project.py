@@ -14,7 +14,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 
-import os
 import urlparse
 
 from jinja2 import Environment
@@ -94,8 +93,7 @@ class OpenstackProject(object):
     @property
     def install_path(self):
         if not self._install_path:
-            base_path = self._render_from_settings('base_path')
-            self._install_path = os.path.join(base_path, self.name)
+            self._install_path = self._render_from_settings('install_path')
         return self._install_path
 
     @property
