@@ -9,4 +9,3 @@ requests
 pygerrit
 docker-py
 virtualenv
-
