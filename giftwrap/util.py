@@ -48,7 +48,7 @@ def execute(command, cwd=None, exit=0):
     (out, err) = process.communicate()
     exitcode = process.wait()
 
-    LOG.debug("Command exitted with rc: %s; STDOUT: %s; STDERR: %s" %
+    LOG.debug("Command exited with rc: %s; STDOUT: %s; STDERR: %s" %
               (exitcode, out, err))
 
     if cwd:

@@ -94,7 +94,6 @@ class OpenstackGitRepo(object):
         return self
 
     def next(self):
-        print self._cache_dir()
         return OpenstackCommit(next(self._commit_iterator),
                                self.project, self.branch,
                                self._cache_dir())
