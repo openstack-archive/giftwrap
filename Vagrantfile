@@ -58,6 +58,16 @@ Vagrant.configure('2') do |config|
 
     gem install --no-ri --no-rdoc fpm
     cd /vagrant
+
+    GET_PIP_MD5='add41078298d8111714c6b87636714f5'
+    wget -q -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
+    if ! md5sum /tmp/get-pip.py | grep -q $GET_PIP_MD5; then
+        echo "pip installation could not be verified. Quitting"
+        exit -1
+    fi
+    python /tmp/get-pip.py
+    pip install -U setuptools     
+    
     python setup.py install
     giftwrap build -m #{GIFTWRAP_MANIFEST} #{GIFTWRAP_ARGS}
 
