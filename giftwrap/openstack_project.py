@@ -86,6 +86,7 @@ class OpenstackProject(object):
 
     def _template_vars(self):
         template_vars = {'project': self}
+        template_vars['settings'] = self._settings
         for var in TEMPLATE_VARS:
             template_vars[var] = object.__getattribute__(self, var)
         return template_vars
@@ -115,8 +116,14 @@ class OpenstackProject(object):
         setting = getattr(self._settings, setting_name)
         env = Environment()
         env.add_extension('jinja2.ext.autoescape')
-        t = env.from_string(setting)
-        return t.render(self._template_vars())
+        result = setting
+        while True:
+            t = env.from_string(result)
+            newresult = t.render(self._template_vars())
+            if newresult == result:
+                break
+            result = newresult
+        return result
 
     @staticmethod
     def factory(settings, project_dict, version):

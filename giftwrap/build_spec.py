@@ -27,6 +27,8 @@ class BuildSpec(object):
         self.version = version
         self.build_type = build_type
         manifest_settings = self._manifest['settings']
+        if version:
+            manifest_settings['version'] = version
         if build_type:
             manifest_settings['build_type'] = build_type
         self.settings = Settings.factory(manifest_settings)

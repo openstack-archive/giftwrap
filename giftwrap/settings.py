@@ -24,7 +24,7 @@ class Settings(object):
     DEFAULTS = {
         'package_name_format': 'openstack-{{ project.name }}',
         'base_path': '/opt/openstack',
-        'install_path': '{{ base_path }}/{{ project.name }}'
+        'install_path': '{{ settings.base_path }}/{{ project.name }}'
     }
 
     def __init__(self, build_type=DEFAULT_BUILD_TYPE,
