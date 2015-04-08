@@ -4,6 +4,11 @@ GIFTWRAP_MANIFEST = ENV['GIFTWRAP_MANIFEST'] || 'examples/manifest.yml'
 GIFTWRAP_ARGS = ENV['GIFTWRAP_ARGS'] || '-t package'
 GIFTWRAP_BUILDBOX_NAME = ENV['GIFTWRAP_BUILDBOX_NAME'] || 'ursula-precise'
 GIFTWRAP_BUILDBOX_URL = ENV['GIFTWRAP_BUILDBOX_URL'] || 'http://apt.openstack.blueboxgrid.com/vagrant/ursula-precise.box'
+
+# CentOS7 example
+#GIFTWRAP_BUILDBOX_NAME = ENV['GIFTWRAP_BUILDBOX_NAME'] || 'centos7'
+#GIFTWRAP_BUILDBOX_URL = ENV['GIFTWRAP_BUILDBOX_URL'] || 'https://f0fff3908f081cb6461b407be80daf97f07ac418.googledrive.com/host/0BwtuV7VyVTSkUG1PM3pCeDJ4dVE/centos7.box'
+
 GIFTWRAP_POSTBUILD_SCRIPT = ENV['GIFTWRAP_POSTBUILD_SCRIPT'] || ""
 
 ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
@@ -42,7 +47,8 @@ Vagrant.configure('2') do |config|
   config.vm.provision 'shell', inline: <<-EOF
     #!/bin/bash
     set -x
-    set -e 
+    set -e
+    
     if [ -f /etc/lsb-release ]; then
         . /etc/lsb-release
         OS=$DISTRIB_ID
@@ -54,6 +60,8 @@ Vagrant.configure('2') do |config|
 
     if [ "$OS" == "Debian" ] || [ "$OS" == "Ubuntu" ]; then
         /vagrant/scripts/prepare_debian.sh
+    elif [ "$OS" == "RedHat" ]; then
+        /vagrant/scripts/prepare_redhat.sh
     fi
 
     gem install --no-ri --no-rdoc fpm
@@ -68,6 +76,7 @@ Vagrant.configure('2') do |config|
     python /tmp/get-pip.py
     pip install -U setuptools     
     
+    export PATH=/usr/local/bin/:$PATH
     python setup.py install
     giftwrap build -m #{GIFTWRAP_MANIFEST} #{GIFTWRAP_ARGS}
 
