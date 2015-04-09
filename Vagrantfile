@@ -11,6 +11,8 @@ GIFTWRAP_BUILDBOX_URL = ENV['GIFTWRAP_BUILDBOX_URL'] || 'http://apt.openstack.bl
 
 GIFTWRAP_POSTBUILD_SCRIPT = ENV['GIFTWRAP_POSTBUILD_SCRIPT'] || ""
 
+GET_PIP_MD5 = ENV['GIFTWRAP_GET_PIP_MD5'] || 'add41078298d8111714c6b87636714f5'
+
 ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
 
 Vagrant.configure('2') do |config|
@@ -67,7 +69,6 @@ Vagrant.configure('2') do |config|
     gem install --no-ri --no-rdoc fpm
     cd /vagrant
 
-    GET_PIP_MD5='8b911e095db95b4dc1f11d4ce8377efd'
     wget -q -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
     if ! md5sum /tmp/get-pip.py | grep -q $GET_PIP_MD5; then
         echo "pip installation could not be verified. Quitting"
