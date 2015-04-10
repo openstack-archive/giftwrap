@@ -67,7 +67,7 @@ Vagrant.configure('2') do |config|
     gem install --no-ri --no-rdoc fpm
     cd /vagrant
 
-    GET_PIP_MD5='add41078298d8111714c6b87636714f5'
+    GET_PIP_MD5='d151ff23e488d8f579d68a7a5777badc'
     wget -q -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
     if ! md5sum /tmp/get-pip.py | grep -q $GET_PIP_MD5; then
         echo "pip installation could not be verified. Quitting"
