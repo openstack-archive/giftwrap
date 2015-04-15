@@ -108,7 +108,10 @@ class PackageBuilder(Builder):
                 else:
                     LOG.debug("Copying config from '%s' to '%s'", src_config,
                               dest_config)
-                    shutil.copytree(src_config, dest_config)
+                    if not os.path.exists(dest_config):
+                        shutil.copytree(src_config, dest_config)
+                    else:
+                        shutil.copy2(src_config, dest_config)
 
             if spec.settings.gerrit_dependencies:
                 self._install_gerrit_dependencies(repo, project, install_path)
