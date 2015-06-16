@@ -77,7 +77,7 @@ Vagrant.configure('2') do |config|
     pip install -U setuptools     
     
     export PATH=/usr/local/bin/:$PATH
-    python setup.py install
+    pip install .
     giftwrap build -m #{GIFTWRAP_MANIFEST} #{GIFTWRAP_ARGS}
 
     if [ ! -z "#{GIFTWRAP_POSTBUILD_SCRIPT}" ]; then
