@@ -92,15 +92,13 @@ class DockerBuilder(Builder):
 
             project_bin_path = os.path.join(project.install_path, 'bin')
             self._paths.append(project_bin_path)
-            venv_python_path = os.path.join(project_bin_path, 'python')
             venv_pip_path = os.path.join(project_bin_path, 'pip')
 
             if project.pip_dependencies:
                 commands.append("%s install %s" % (venv_pip_path,
                                 ' '.join(project.pip_dependencies)))
-            commands.append('cd %s && %s setup.py install && cd -' %
-                            (project_src_path, venv_python_path))
-            commands.append("%s install pbr" % venv_pip_path)
+            commands.append("%s install %s" % (venv_pip_path,
+                                               project_src_path))
 
         return commands
 

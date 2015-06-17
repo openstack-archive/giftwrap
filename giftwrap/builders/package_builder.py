@@ -94,7 +94,6 @@ class PackageBuilder(Builder):
 
             # install into the virtualenv
             LOG.info("Installing '%s' to the virtualenv", project.name)
-            venv_python_path = os.path.join(install_path, 'bin/python')
             venv_pip_path = os.path.join(install_path, 'bin/pip')
 
             deps = " ".join(project.pip_dependencies)
@@ -114,8 +113,7 @@ class PackageBuilder(Builder):
             if spec.settings.gerrit_dependencies:
                 self._install_gerrit_dependencies(repo, project, install_path)
 
-            execute("%s setup.py install" % venv_python_path, project_src_path)
-            execute("%s install pbr" % venv_pip_path)
+            execute("%s install %s" % (venv_pip_path, project_src_path))
 
             # now build the package
             pkg = Package(project.package_name, project.version,
