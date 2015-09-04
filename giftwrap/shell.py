@@ -19,8 +19,7 @@ import logging
 import signal
 import sys
 
-import giftwrap.builder
-
+from giftwrap.builders import BuilderFactory
 from giftwrap.build_spec import BuildSpec
 from giftwrap.color import ColorStreamHandler
 
@@ -48,7 +47,7 @@ def build(args):
             manifest = fh.read()
 
         buildspec = BuildSpec(manifest, args.version, args.type)
-        builder = giftwrap.builder.create_builder(buildspec)
+        builder = BuilderFactory.create_builder(args.type, buildspec)
 
         def _signal_handler(*args):
             LOG.info("Process interrrupted. Cleaning up.")
@@ -79,7 +78,8 @@ def main():
                                          description='build giftwrap packages')
     build_subcmd.add_argument('-m', '--manifest', required=True)
     build_subcmd.add_argument('-v', '--version')
-    build_subcmd.add_argument('-t', '--type', choices=('docker', 'package'))
+    build_subcmd.add_argument('-t', '--type', choices=('docker', 'package'),
+                              required=True)
     build_subcmd.set_defaults(func=build)
 
     args = parser.parse_args()

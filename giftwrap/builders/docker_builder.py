@@ -22,7 +22,7 @@ import os
 import re
 import tempfile
 
-from giftwrap.builder import Builder
+from giftwrap.builders import Builder
 
 LOG = logging.getLogger(__name__)
 
@@ -41,7 +41,6 @@ APT_REQUIRED_PACKAGES = [
     'libssl-dev',
     'python-dev',
     'libmysqlclient-dev',
-    'python-virtualenv',
     'python-pip',
     'build-essential'
 ]
@@ -51,61 +50,71 @@ DEFAULT_SRC_PATH = '/opt/openstack'
 class DockerBuilder(Builder):
 
     def __init__(self, spec):
-        self.template = DEFAULT_TEMPLATE_FILE
         self.base_image = 'ubuntu:12.04'
         self.maintainer = 'maintainer@example.com'
         self.envvars = {'DEBIAN_FRONTEND': 'noninteractive'}
-        self._paths = []
+        self._commands = []
         super(DockerBuilder, self).__init__(spec)
 
-    def _validate_settings(self):
-        pass
+    def _execute(self, command, cwd=None, exit=0):
+        if cwd:
+            self._commands.append("cd %s" % (cwd))
+        self._commands.append(command)
+        if cwd:
+            self._commands.append("cd -")
 
-    def _cleanup(self):
-        pass
+    def _make_temp_dir(self, prefix='giftwrap'):
+        return "/tmp/giftwrap"
+        self._commands.append("mktemp -d -t %s.XXXXXXXXXX" % prefix)
 
-    def _get_prep_commands(self):
-        commands = []
-        commands.append('apt-get update && apt-get install -y %s' %
-                        ' '.join(APT_REQUIRED_PACKAGES))
-        return commands
+    def _make_dir(self, path, mode=0777):
+        self._commands.append("mkdir -p -m %o %s" % (mode, path))
 
-    def _get_build_commands(self, src_path):
-        commands = []
-        commands.append('mkdir -p %s' % src_path)
+    def _prepare_project_build(self, project):
+        return
 
-        for project in self._spec.projects:
-            if project.system_dependencies:
-                commands.append('apt-get update && apt-get install -y %s' %
-                                ' '.join(project.system_dependencies))
+    def _clone_project(self, giturl, name, gitref, depth, path):
+        cmd = "git clone %s -b %s --depth=%d %s" % (giturl, gitref,
+                                                    depth, path)
+        self._commands.append(cmd)
 
-            project_src_path = os.path.join(src_path, project.name)
-            commands.append('git clone --depth 1 %s -b %s %s' %
-                            (project.giturl, project.gitref, project_src_path))
-            commands.append('COMMIT=`git rev-parse HEAD` && echo "%s $COMMIT" '
-                            '> %s/gitinfo' % (project.giturl,
-                                              project.install_path))
-            commands.append('mkdir -p %s' %
-                            os.path.dirname(project.install_path))
-            commands.append('virtualenv --system-site-packages %s' %
-                            project.install_path)
+    def _create_virtualenv(self, venv_command, path):
+        self._execute(venv_command, path)
 
-            project_bin_path = os.path.join(project.install_path, 'bin')
-            self._paths.append(project_bin_path)
-            venv_pip_path = os.path.join(project_bin_path, 'pip')
+    def _install_pip_dependencies(self, venv_path, dependencies):
+        pip_path = self._get_venv_pip_path(venv_path)
+        self._execute("%s install %s" % (pip_path, dependencies))
 
-            if project.pip_dependencies:
-                commands.append("%s install %s" % (venv_pip_path,
-                                ' '.join(project.pip_dependencies)))
-            commands.append("%s install %s" % (venv_pip_path,
-                                               project_src_path))
+    def _copy_sample_config(self, src_clone_dir, project):
+        src_config = os.path.join(src_clone_dir, 'etc')
+        dest_config = os.path.join(project.install_path, 'etc')
 
-        return commands
+        self._commands.append("if [ -d %s ]; then cp -R %s %s; fi" % (
+            src_config, src_config, dest_config))
 
-    def _get_cleanup_commands(self, src_path):
-        commands = []
-        commands.append('rm -rf %s' % src_path)
-        return commands
+    def _install_project(self, venv_path, src_clone_dir):
+        pip_path = self._get_venv_pip_path(venv_path)
+        self._execute("%s install %s" % (pip_path, src_clone_dir))
+
+    def _finalize_project_build(self, project):
+        self._commands.append("rm -rf %s" % self._temp_dir)
+        for command in self._commands:
+            print command
+
+    def _finalize_build(self):
+        template_vars = {
+            'commands': self._commands
+        }
+        print self._render_dockerfile(template_vars)
+        self._build_image()
+
+    def _cleanup_build(self):
+        return
+
+    def _prepare_build(self):
+        self._commands.append('apt-get update && apt-get install -y %s' %
+                              ' '.join(APT_REQUIRED_PACKAGES))
+        self._commands.append("pip install -U pip virtualenv")
 
     def _set_path(self):
         path = ":".join(self._paths)
@@ -116,16 +125,14 @@ class DockerBuilder(Builder):
         template_vars.update(extra_vars)
         template_loader = jinja2.FileSystemLoader(searchpath='/')
         template_env = jinja2.Environment(loader=template_loader)
-        template = template_env.get_template(self.template)
+        template = template_env.get_template(DEFAULT_TEMPLATE_FILE)
         return template.render(template_vars)
 
-    def _build(self):
-        src_path = DEFAULT_SRC_PATH
-        commands = self._get_prep_commands()
-        commands += self._get_build_commands(src_path)
-        commands += self._get_cleanup_commands(src_path)
-        self._set_path()
-        dockerfile_contents = self._render_dockerfile(locals())
+    def _build_image(self):
+        template_vars = {
+            'commands': self._commands
+        }
+        dockerfile_contents = self._render_dockerfile(template_vars)
 
         tempdir = tempfile.mkdtemp()
         dockerfile = os.path.join(tempdir, 'Dockerfile')
