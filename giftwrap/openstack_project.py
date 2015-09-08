@@ -23,7 +23,7 @@ DEFAULT_GITURL = {
     'openstack': 'https://git.openstack.org/openstack/',
     'stackforge': 'https://github.com/stackforge/'
 }
-DEFAULT_VENV_COMMAND = "virtualenv ."
+DEFAULT_VENV_COMMAND = "virtualenv --no-wheel ."
 DEFAULT_INSTALL_COMMAND = "./bin/pip install %s"  # noqa
 
 TEMPLATE_VARS = ('name', 'version', 'gitref', 'stackforge')
@@ -32,7 +32,7 @@ TEMPLATE_VARS = ('name', 'version', 'gitref', 'stackforge')
 class OpenstackProject(object):
 
     def __init__(self, settings, name, version=None, gitref=None, giturl=None,
-                 gitdepth=None, venv_command=None, install_command=None,
+                 gitdepth=1, venv_command=None, install_command=None,
                  install_path=None, package_name=None, stackforge=False,
                  system_dependencies=[], pip_dependencies=[]):
         self._settings = settings

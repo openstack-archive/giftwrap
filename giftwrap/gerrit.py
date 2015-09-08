@@ -50,7 +50,8 @@ class GerritReview(object):
                     freeze_found = True
                 continue
             elif re.match('[\w\-]+==.+', line) and not line.startswith('-e'):
-                dependencies.append(line)
+                dependency = line.split('#')[0].strip()  # remove any comments
+                dependencies.append(dependency)
 
         short_name = self.project.split('/')[1]
         dependencies = filter(lambda x: not x.startswith(short_name + "=="),
