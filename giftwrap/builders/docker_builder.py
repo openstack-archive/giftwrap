@@ -50,7 +50,7 @@ DEFAULT_SRC_PATH = '/opt/openstack'
 class DockerBuilder(Builder):
 
     def __init__(self, spec):
-        self.base_image = 'ubuntu:12.04'
+        self.base_image = 'ubuntu:14.04'
         self.maintainer = 'maintainer@example.com'
         self.envvars = {'DEBIAN_FRONTEND': 'noninteractive'}
         self._commands = []
@@ -101,12 +101,12 @@ class DockerBuilder(Builder):
         for command in self._commands:
             print command
 
-    def _finalize_build(self):
+    def _finalize_build(self, project):
         template_vars = {
             'commands': self._commands
         }
         print self._render_dockerfile(template_vars)
-        self._build_image()
+        self._build_image(project)
 
     def _cleanup_build(self):
         return
@@ -128,7 +128,7 @@ class DockerBuilder(Builder):
         template = template_env.get_template(DEFAULT_TEMPLATE_FILE)
         return template.render(template_vars)
 
-    def _build_image(self):
+    def _build_image(self, project):
         template_vars = {
             'commands': self._commands
         }
@@ -139,11 +139,12 @@ class DockerBuilder(Builder):
         with open(dockerfile, "w") as w:
             w.write(dockerfile_contents)
 
-        docker_client = docker.Client(base_url='unix://var/run/docker.sock',
-                                      version='1.10', timeout=10)
+        tag = "openstack-%s:%s" % (project.name, project.version)
 
+        docker_client = docker.Client(base_url='unix://var/run/docker.sock',
+                                      timeout=10)
         build_result = docker_client.build(path=tempdir, stream=True,
-                                           tag='openstack-9.0:bbc6')
+                                           tag=tag)
         for line in build_result:
             LOG.info(line.strip())
 
