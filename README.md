@@ -21,7 +21,8 @@ Status
 Usage
 =====
 
-    $ pip install giftwrap
+    $ pip install .
+    $ python setup.py install
     $ giftwrap -h
 
 Dependencies
