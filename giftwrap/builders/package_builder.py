@@ -96,7 +96,7 @@ class PackageBuilder(Builder):
                       project.system_dependencies)
         pkg.build()
 
-    def _finalize_build(self, project):
+    def _finalize_build(self):
         return
 
     def _cleanup_build(self):

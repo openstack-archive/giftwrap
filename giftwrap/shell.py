@@ -55,7 +55,7 @@ def build(args):
             sys.exit()
         signal.signal(signal.SIGINT, _signal_handler)
 
-        builder.build(args)
+        builder.build()
     except Exception as e:
         LOG.exception("Oops something went wrong: %s", e)
         fail = True

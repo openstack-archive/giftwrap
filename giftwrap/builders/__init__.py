@@ -74,7 +74,7 @@ class Builder(object):
         # finish up
         self._finalize_project_build(project)
 
-    def build(self, project):
+    def build(self):
         spec = self._spec
 
         self._prepare_build()
@@ -87,7 +87,7 @@ class Builder(object):
         for project in spec.projects:
             self._build_project(project)
 
-        self._finalize_build(project)
+        self._finalize_build()
 
     def cleanup(self):
         self._cleanup_build()

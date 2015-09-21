@@ -71,6 +71,7 @@ class DockerBuilder(Builder):
         self._commands.append("mkdir -p -m %o %s" % (mode, path))
 
     def _prepare_project_build(self, project):
+        self.image_name = "giftwrap/openstack:%s" % (project.version)
         return
 
     def _clone_project(self, giturl, name, gitref, depth, path):
@@ -79,10 +80,11 @@ class DockerBuilder(Builder):
         self._commands.append(cmd)
 
     def _create_virtualenv(self, venv_command, path):
-        return
+        self._execute(venv_command, path)
 
     def _install_pip_dependencies(self, venv_path, dependencies):
-        self._execute("pip install %s" % (dependencies))
+        pip_path = self._get_venv_pip_path(venv_path)
+        self._execute("%s install %s" % (pip_path, dependencies))
 
     def _copy_sample_config(self, src_clone_dir, project):
         src_config = os.path.join(src_clone_dir, 'etc')
@@ -92,19 +94,20 @@ class DockerBuilder(Builder):
             src_config, src_config, dest_config))
 
     def _install_project(self, venv_path, src_clone_dir):
-        self._execute("pip install %s" % (src_clone_dir))
+        pip_path = self._get_venv_pip_path(venv_path)
+        self._execute("%s install %s" % (pip_path, src_clone_dir))
 
     def _finalize_project_build(self, project):
         self._commands.append("rm -rf %s" % self._temp_dir)
         for command in self._commands:
             print command
 
-    def _finalize_build(self, project):
+    def _finalize_build(self):
         template_vars = {
             'commands': self._commands
         }
         print self._render_dockerfile(template_vars)
-        self._build_image(project)
+        self._build_image()
 
     def _cleanup_build(self):
         return
@@ -126,7 +129,7 @@ class DockerBuilder(Builder):
         template = template_env.get_template(DEFAULT_TEMPLATE_FILE)
         return template.render(template_vars)
 
-    def _build_image(self, project):
+    def _build_image(self):
         template_vars = {
             'commands': self._commands
         }
@@ -136,13 +139,10 @@ class DockerBuilder(Builder):
         dockerfile = os.path.join(tempdir, 'Dockerfile')
         with open(dockerfile, "w") as w:
             w.write(dockerfile_contents)
-
-        tag = "openstack-%s:%s" % (project.name, project.version)
-
         docker_client = docker.Client(base_url='unix://var/run/docker.sock',
                                       timeout=10)
         build_result = docker_client.build(path=tempdir, stream=True,
-                                           tag=tag)
+                                           tag=self.image_name)
         for line in build_result:
             LOG.info(line.strip())
 
