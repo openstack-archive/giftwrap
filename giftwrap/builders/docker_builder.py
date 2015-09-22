@@ -50,7 +50,7 @@ DEFAULT_SRC_PATH = '/opt/openstack'
 class DockerBuilder(Builder):
 
     def __init__(self, spec):
-        self.base_image = 'ubuntu:12.04'
+        self.base_image = 'ubuntu:14.04'
         self.maintainer = 'maintainer@example.com'
         self.envvars = {'DEBIAN_FRONTEND': 'noninteractive'}
         self._commands = []
@@ -71,6 +71,7 @@ class DockerBuilder(Builder):
         self._commands.append("mkdir -p -m %o %s" % (mode, path))
 
     def _prepare_project_build(self, project):
+        self.image_name = "giftwrap/openstack:%s" % (project.version)
         return
 
     def _clone_project(self, giturl, name, gitref, depth, path):
@@ -138,12 +139,10 @@ class DockerBuilder(Builder):
         dockerfile = os.path.join(tempdir, 'Dockerfile')
         with open(dockerfile, "w") as w:
             w.write(dockerfile_contents)
-
         docker_client = docker.Client(base_url='unix://var/run/docker.sock',
-                                      version='1.10', timeout=10)
-
+                                      timeout=10)
         build_result = docker_client.build(path=tempdir, stream=True,
-                                           tag='openstack-9.0:bbc6')
+                                           tag=self.image_name)
         for line in build_result:
             LOG.info(line.strip())
 
