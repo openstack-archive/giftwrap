@@ -71,6 +71,9 @@ class Builder(object):
 
         self._install_project(project.install_path, src_clone_dir)
 
+        if project.postinstall_dependencies:
+            self._install_postinstall_dependencies(project)
+
         # finish up
         self._finalize_project_build(project)
 
@@ -130,6 +133,10 @@ class Builder(object):
 
     @abstractmethod
     def _install_project(self, venv_path, src_clone_dir):
+        return
+
+    @abstractmethod
+    def _install_postinstall_dependencies(self, project):
         return
 
     @abstractmethod
