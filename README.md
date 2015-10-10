@@ -1,5 +1,5 @@
-giftwrap
-========
+<div align="center"><img src="./giftwrap.png" alt="Giftwrap" width="50%"></div><hr />
+
 A tool for creating bespoke system-native OpenStack artifacts.
 
 Anyone running OpenStack at scale typically crafts their own software distribution mechanism. There may be many reasons for this, but chief among them seem to be the desire to ship security patches, deliver custom code, lock their releases at a revision of their choosing, or just generally stay closer to trunk.
@@ -21,7 +21,8 @@ Status
 Usage
 =====
 
-    $ pip install giftwrap
+    $ pip install .
+    $ python setup.py install
     $ giftwrap -h
 
 Dependencies
