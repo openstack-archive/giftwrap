@@ -1,4 +1,4 @@
-<div align="center"><img src="./giftwrap.png" alt="Giftwrap"></div><hr />
+<div align="center"><img src="./giftwrap.png" alt="Giftwrap" width="50%"></div><hr />
 
 A tool for creating bespoke system-native OpenStack artifacts.
 
