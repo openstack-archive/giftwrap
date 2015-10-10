@@ -16,6 +16,7 @@
 
 import logging
 import os
+import threading
 
 from giftwrap.gerrit import GerritReview
 
@@ -84,8 +85,19 @@ class Builder(object):
         self._temp_src_dir = os.path.join(self._temp_dir, 'src')
         LOG.debug("Temporary working directory: %s", self._temp_dir)
 
+        threads = []
         for project in spec.projects:
-            self._build_project(project)
+            if spec.settings.parallel_build:
+                t = threading.Thread(target=self._build_project,
+                                     args=(project,))
+                threads.append(t)
+                t.start()
+            else:
+                self._build_project(project)
+
+        if spec.settings.parallel_build:
+            for thread in threads:
+                thread.join()
 
         self._finalize_build()
 

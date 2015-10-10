@@ -22,7 +22,7 @@ from giftwrap.settings import Settings
 
 class BuildSpec(object):
 
-    def __init__(self, manifest, version, build_type=None):
+    def __init__(self, manifest, version, build_type=None, parallel=True):
         self._manifest = yaml.load(manifest)
         self.version = version
         self.build_type = build_type
@@ -31,6 +31,7 @@ class BuildSpec(object):
             manifest_settings['version'] = version
         if build_type:
             manifest_settings['build_type'] = build_type
+        manifest_settings['parallel_build'] = parallel
         self.settings = Settings.factory(manifest_settings)
         self.projects = self._render_projects()
 
