@@ -82,7 +82,7 @@ class PackageBuilder(Builder):
         else:
             LOG.debug("Copying config from '%s' to '%s'", src_config,
                       dest_config)
-        distutils.dir_util.copy_tree(src_config, dest_config)
+            distutils.dir_util.copy_tree(src_config, dest_config)
 
     def _install_project(self, venv_path, src_clone_dir):
         pip_path = self._get_venv_pip_path(venv_path)
