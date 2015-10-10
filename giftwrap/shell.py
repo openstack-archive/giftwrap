@@ -46,7 +46,7 @@ def build(args):
         with open(args.manifest, 'r') as fh:
             manifest = fh.read()
 
-        buildspec = BuildSpec(manifest, args.version, args.type)
+        buildspec = BuildSpec(manifest, args.version, args.type, args.parallel)
         builder = BuilderFactory.create_builder(args.type, buildspec)
 
         def _signal_handler(*args):
@@ -80,6 +80,8 @@ def main():
     build_subcmd.add_argument('-v', '--version')
     build_subcmd.add_argument('-t', '--type', choices=('docker', 'package'),
                               required=True)
+    build_subcmd.add_argument('-s', '--synchronous', dest='parallel',
+                              action='store_false')
     build_subcmd.set_defaults(func=build)
 
     args = parser.parse_args()
