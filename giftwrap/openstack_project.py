@@ -34,7 +34,8 @@ class OpenstackProject(object):
     def __init__(self, settings, name, version=None, gitref=None, giturl=None,
                  gitdepth=1, venv_command=None, install_command=None,
                  install_path=None, package_name=None, stackforge=False,
-                 system_dependencies=[], pip_dependencies=[]):
+                 system_dependencies=[], pip_dependencies=[],
+                 postinstall_dependencies=[]):
         self._settings = settings
         self.name = name
         self._version = version
@@ -49,6 +50,7 @@ class OpenstackProject(object):
         self._git_path = None
         self.system_dependencies = system_dependencies
         self.pip_dependencies = pip_dependencies
+        self.postinstall_dependencies = postinstall_dependencies
 
     @property
     def version(self):

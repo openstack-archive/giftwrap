@@ -88,6 +88,11 @@ class PackageBuilder(Builder):
         pip_path = self._get_venv_pip_path(venv_path)
         self._execute("%s install %s" % (pip_path, src_clone_dir))
 
+    def _install_postinstall_dependencies(self, project):
+        pip_path = self._get_venv_pip_path(project.install_path)
+        dependencies = " ".join(project.postinstall_dependencies)
+        self._execute("%s install %s" % (pip_path, dependencies))
+
     def _finalize_project_build(self, project):
         # build the package
         pkg = Package(project.package_name, project.version,
