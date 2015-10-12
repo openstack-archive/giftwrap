@@ -31,6 +31,8 @@ class BuildSpec(object):
             manifest_settings['version'] = version
         if build_type:
             manifest_settings['build_type'] = build_type
+        if build_type == 'docker':
+            parallel = False
         manifest_settings['parallel_build'] = parallel
         self.settings = Settings.factory(manifest_settings)
         self.projects = self._render_projects()
