@@ -30,8 +30,9 @@ def _setup_logger(level=logging.INFO):
     logger = logging.getLogger()
     logger.setLevel(level)
     log_handler = ColorStreamHandler(sys.stdout)
-    fmt = logging.Formatter(fmt='%(asctime)s %(name)s %(levelname)s: '
-                            '%(message)s', datefmt='%F %H:%M:%S')
+    fmt = logging.Formatter(fmt='%(asctime)s %(threadName)s %(name)s '
+                            '%(levelname)s: %(message)s',
+                            datefmt='%F %H:%M:%S')
     log_handler.setFormatter(fmt)
     logger.addHandler(log_handler)
 
@@ -55,7 +56,7 @@ def build(args):
             sys.exit()
         signal.signal(signal.SIGINT, _signal_handler)
 
-        builder.build()
+        rc = builder.build()
     except Exception as e:
         LOG.exception("Oops something went wrong: %s", e)
         fail = True
@@ -63,6 +64,7 @@ def build(args):
     builder.cleanup()
     if fail:
         sys.exit(-1)
+    sys.exit(rc)
 
 
 def main():
