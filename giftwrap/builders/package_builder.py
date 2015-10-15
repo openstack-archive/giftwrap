@@ -61,7 +61,7 @@ class PackageBuilder(Builder):
 
     def _clone_project(self, giturl, name, gitref, depth, path):
         LOG.info("Fetching source code for '%s'", name)
-        repo = OpenstackGitRepo(giturl, name, gitref, depth)
+        repo = OpenstackGitRepo(giturl, name, gitref, depth=depth)
         repo.clone(path)
         return repo
 
