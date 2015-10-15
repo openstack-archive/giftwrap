@@ -27,6 +27,7 @@ SAMPLE_SETTINGS = {
 
 
 class TestSettings(unittest.TestCase):
+
     def test_factory(self):
         settings_dict = SAMPLE_SETTINGS
         s = settings.Settings.factory(settings_dict)

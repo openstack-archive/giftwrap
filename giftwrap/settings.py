@@ -30,7 +30,8 @@ class Settings(object):
     def __init__(self, build_type=DEFAULT_BUILD_TYPE,
                  package_name_format=None, version=None,
                  base_path=None, install_path=None, gerrit_dependencies=True,
-                 force_overwrite=False, output_dir=None, include_config=True):
+                 force_overwrite=False, output_dir=None, include_config=True,
+                 parallel_build=True):
         if not version:
             raise Exception("'version' is a required settings")
         self.build_type = build_type
@@ -42,6 +43,7 @@ class Settings(object):
         self.force_overwrite = force_overwrite
         self._output_dir = output_dir
         self.include_config = include_config
+        self.parallel_build = parallel_build
 
     @property
     def package_name_format(self):
