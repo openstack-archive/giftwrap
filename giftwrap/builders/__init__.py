@@ -32,6 +32,7 @@ class Builder(object):
         self._temp_dir = None
         self._temp_src_dir = None
         self._spec = spec
+        self._thread_exit = []
 
     def _get_venv_pip_path(self, venv_path):
         return os.path.join(venv_path, 'bin/pip')
@@ -46,38 +47,44 @@ class Builder(object):
             return []
 
     def _build_project(self, project):
-        self._prepare_project_build(project)
-        self._make_dir(project.install_path)
+        try:
+            self._prepare_project_build(project)
+            self._make_dir(project.install_path)
 
-        # clone the source
-        src_clone_dir = os.path.join(self._temp_src_dir, project.name)
-        repo = self._clone_project(project.giturl, project.name,
-                                   project.gitref, project.gitdepth,
-                                   src_clone_dir)
+            # clone the source
+            src_clone_dir = os.path.join(self._temp_src_dir, project.name)
+            repo = self._clone_project(project.giturl, project.name,
+                                       project.gitref, project.gitdepth,
+                                       src_clone_dir)
 
-        # create and build the virtualenv
-        self._create_virtualenv(project.venv_command, project.install_path)
-        dependencies = []
-        if project.pip_dependencies:
-            dependencies = project.pip_dependencies
-        if self._spec.settings.gerrit_dependencies:
-            dependencies += self._get_gerrit_dependencies(repo, project)
+            # create and build the virtualenv
+            self._create_virtualenv(project.venv_command, project.install_path)
+            dependencies = []
+            if project.pip_dependencies:
+                dependencies = project.pip_dependencies
+            if self._spec.settings.gerrit_dependencies:
+                dependencies += self._get_gerrit_dependencies(repo, project)
 
-        if len(dependencies):
-            self._install_pip_dependencies(project.install_path,
-                                           dependencies)
+            if len(dependencies):
+                self._install_pip_dependencies(project.install_path,
+                                               dependencies)
 
-        if self._spec.settings.include_config:
-            self._copy_sample_config(src_clone_dir, project)
+            if self._spec.settings.include_config:
+                self._copy_sample_config(src_clone_dir, project)
 
-        self._install_project(project.install_path, src_clone_dir)
+            self._install_project(project.install_path, src_clone_dir)
 
-        if project.postinstall_dependencies:
-            dependencies = project.postinstall_dependencies
-            self._install_pip_dependencies(project, dependencies)
+            if project.postinstall_dependencies:
+                dependencies = project.postinstall_dependencies
+                self._install_pip_dependencies(project.install_path,
+                                               dependencies)
 
-        # finish up
-        self._finalize_project_build(project)
+            # finish up
+            self._finalize_project_build(project)
+        except Exception as e:
+            LOG.error("Oops. Problem building %s: %s", project.name, e)
+            self._thread_exit.append(-1)
+        self._thread_exit.append(0)
 
     def build(self):
         spec = self._spec
@@ -93,17 +100,23 @@ class Builder(object):
         for project in spec.projects:
             if spec.settings.parallel_build:
                 t = threading.Thread(target=self._build_project,
-                                     args=(project,))
+                                     name=project.name, args=(project,))
                 threads.append(t)
                 t.start()
             else:
                 self._build_project(project)
 
+        rc = 0
         if spec.settings.parallel_build:
             for thread in threads:
                 thread.join()
 
+            for thread_exit in self._thread_exit:
+                if thread_exit != 0:
+                    rc = thread_exit
+
         self._finalize_build()
+        return rc
 
     def cleanup(self):
         self._cleanup_build()
