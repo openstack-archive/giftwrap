@@ -39,11 +39,11 @@ class Builder(object):
     def _get_gerrit_dependencies(self, repo, project):
         try:
             review = GerritReview(repo.head.change_id, project.git_path)
-            return review.build_pip_dependencies(string=True)
+            return review.build_pip_dependencies()
         except Exception as e:
             LOG.warning("Could not install gerrit dependencies!!! "
                         "Error was: %s", e)
-            return ""
+            return []
 
     def _build_project(self, project):
         self._prepare_project_build(project)
@@ -57,15 +57,15 @@ class Builder(object):
 
         # create and build the virtualenv
         self._create_virtualenv(project.venv_command, project.install_path)
-        dependencies = ""
+        dependencies = []
         if project.pip_dependencies:
-            dependencies = " ".join(project.pip_dependencies)
+            dependencies = project.pip_dependencies
         if self._spec.settings.gerrit_dependencies:
-            dependencies = "%s %s" % (dependencies,
-                                      self._get_gerrit_dependencies(repo,
-                                                                    project))
+            dependencies += self._get_gerrit_dependencies(repo, project)
+
         if len(dependencies):
-            self._install_pip_dependencies(project.install_path, dependencies)
+            self._install_pip_dependencies(project.install_path,
+                                           dependencies)
 
         if self._spec.settings.include_config:
             self._copy_sample_config(src_clone_dir, project)
@@ -73,7 +73,8 @@ class Builder(object):
         self._install_project(project.install_path, src_clone_dir)
 
         if project.postinstall_dependencies:
-            self._install_postinstall_dependencies(project)
+            dependencies = project.postinstall_dependencies
+            self._install_pip_dependencies(project, dependencies)
 
         # finish up
         self._finalize_project_build(project)
@@ -145,10 +146,6 @@ class Builder(object):
 
     @abstractmethod
     def _install_project(self, venv_path, src_clone_dir):
-        return
-
-    @abstractmethod
-    def _install_postinstall_dependencies(self, project):
         return
 
     @abstractmethod
