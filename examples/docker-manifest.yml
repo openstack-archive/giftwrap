@@ -1,0 +1,13 @@
+---
+settings:
+  package_name_format: 'openstack-{{ project.name }}-{{ settings.version }}'
+  build_type: package
+  version: '10.0-bbc1'
+  base_path: '/openstack'
+  force_overwrite: true
+
+projects:
+  - name: glance
+    gitref: stable/kilo
+  - name: heat
+    gitref: stable/kilo

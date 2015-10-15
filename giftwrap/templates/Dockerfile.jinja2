@@ -7,6 +7,4 @@ MAINTAINER {{ maintainer }}
 ENV {{ k }} {{ v }}
 {% endfor -%}
 
-{% for command in commands -%}
-RUN {{ command }}
-{% endfor %}
+RUN {% for command in commands[:-1] -%}{{ command|safe }} && {% endfor -%} {{ commands[-1]|safe }}

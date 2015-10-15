@@ -20,8 +20,7 @@ import os
 import shutil
 import tempfile
 
-from giftwrap.builder import Builder
-from giftwrap.gerrit import GerritReview
+from giftwrap.builders import Builder
 from giftwrap.openstack_git_repo import OpenstackGitRepo
 from giftwrap.package import Package
 from giftwrap.util import execute
@@ -32,95 +31,74 @@ LOG = logging.getLogger(__name__)
 class PackageBuilder(Builder):
 
     def __init__(self, spec):
-        self._tempdir = None
+        self._temp_dir = None
         super(PackageBuilder, self).__init__(spec)
 
-    def _validate_settings(self):
-        pass
+    def _execute(self, command, cwd=None, exit=0):
+        return execute(command, cwd, exit)
 
-    def _install_gerrit_dependencies(self, repo, project, install_path):
-        try:
-            review = GerritReview(repo.head.change_id, project.git_path)
-            LOG.info("Installing '%s' pip dependencies to the virtualenv",
-                     project.name)
-            execute(project.install_command %
-                    review.build_pip_dependencies(string=True), install_path)
-        except Exception as e:
-            LOG.warning("Could not install gerrit dependencies!!! "
-                        "Error was: %s", e)
+    def _make_temp_dir(self, prefix='giftwrap'):
+        return tempfile.mkdtemp(prefix)
 
-    def _build(self):
-        spec = self._spec
+    def _make_dir(self, path, mode=0777):
+        os.makedirs(path, mode)
 
-        self._tempdir = tempfile.mkdtemp(prefix='giftwrap')
-        src_path = os.path.join(self._tempdir, 'src')
-        LOG.debug("Temporary working directory: %s", self._tempdir)
+    def _prepare_build(self):
+        return
 
-        for project in spec.projects:
-            LOG.info("Beginning to build '%s'", project.name)
+    def _prepare_project_build(self, project):
+        install_path = project.install_path
 
-            install_path = project.install_path
-            LOG.debug("Installing '%s' to '%s'", project.name, install_path)
+        LOG.info("Beginning to build '%s'", project.name)
+        if os.path.exists(install_path):
+            if self._spec.settings.force_overwrite:
+                LOG.info("force_overwrite is set, so removing "
+                         "existing path '%s'" % install_path)
+                shutil.rmtree(install_path)
+            else:
+                raise Exception("Install path '%s' already exists" %
+                                install_path)
 
-            # if anything is in our way, see if we can get rid of it
-            if os.path.exists(install_path):
-                if spec.settings.force_overwrite:
-                    LOG.info("force_overwrite is set, so removing "
-                             "existing path '%s'" % install_path)
-                    shutil.rmtree(install_path)
-                else:
-                    raise Exception("Install path '%s' already exists" %
-                                    install_path)
-            os.makedirs(install_path)
+    def _clone_project(self, giturl, name, gitref, depth, path):
+        LOG.info("Fetching source code for '%s'", name)
+        repo = OpenstackGitRepo(giturl, name, gitref, depth=depth)
+        repo.clone(path)
+        return repo
 
-            # clone the project's source to a temporary directory
-            project_src_path = os.path.join(src_path, project.name)
-            os.makedirs(project_src_path)
+    def _create_virtualenv(self, venv_command, path):
+        self._execute(venv_command, path)
 
-            LOG.info("Fetching source code for '%s'", project.name)
-            repo = OpenstackGitRepo(project.giturl, project.name,
-                                    project.gitref,
-                                    depth=project.gitdepth)
-            repo.clone(project_src_path)
+    def _install_pip_dependencies(self, venv_path, dependencies):
+        pip_path = self._get_venv_pip_path(venv_path)
+        for dependency in dependencies:
+            self._execute("%s install %s" % (pip_path, dependency))
 
-            # tell package users where this came from
-            gitinfo_file = os.path.join(install_path, 'gitinfo')
-            with open(gitinfo_file, 'w') as fh:
-                fh.write("%s %s" % (project.giturl, repo.head.hexsha))
+    def _copy_sample_config(self, src_clone_dir, project):
+        src_config = os.path.join(src_clone_dir, 'etc')
+        dest_config = os.path.join(project.install_path, 'etc')
 
-            # start building the virtualenv for the project
-            LOG.info("Creating the virtualenv for '%s'", project.name)
-            execute(project.venv_command, install_path)
+        if not os.path.exists(src_config):
+            LOG.warning("Project configuration does not seem to exist "
+                        "in source repo '%s'. Skipping.", project.name)
+        else:
+            LOG.debug("Copying config from '%s' to '%s'", src_config,
+                      dest_config)
+            distutils.dir_util.copy_tree(src_config, dest_config)
 
-            # install into the virtualenv
-            LOG.info("Installing '%s' to the virtualenv", project.name)
-            venv_pip_path = os.path.join(install_path, 'bin/pip')
+    def _install_project(self, venv_path, src_clone_dir):
+        pip_path = self._get_venv_pip_path(venv_path)
+        self._execute("%s install %s" % (pip_path, src_clone_dir))
 
-            deps = " ".join(project.pip_dependencies)
-            execute("%s install %s" % (venv_pip_path, deps))
+    def _finalize_project_build(self, project):
+        # build the package
+        pkg = Package(project.package_name, project.version,
+                      project.install_path, self._spec.settings.output_dir,
+                      self._spec.settings.force_overwrite,
+                      project.system_dependencies)
+        pkg.build()
 
-            if spec.settings.include_config:
-                src_config = os.path.join(project_src_path, 'etc')
-                dest_config = os.path.join(install_path, 'etc')
-                if not os.path.exists(src_config):
-                    LOG.warning("Project configuration does not seem to exist "
-                                "in source repo '%s'. Skipping.", project.name)
-                else:
-                    LOG.debug("Copying config from '%s' to '%s'", src_config,
-                              dest_config)
-                    distutils.dir_util.copy_tree(src_config, dest_config)
+    def _finalize_build(self):
+        return
 
-            if spec.settings.gerrit_dependencies:
-                self._install_gerrit_dependencies(repo, project, install_path)
-
-            execute("%s install %s" % (venv_pip_path, project_src_path))
-
-            # now build the package
-            pkg = Package(project.package_name, project.version,
-                          install_path, spec.settings.output_dir,
-                          spec.settings.force_overwrite,
-                          project.system_dependencies)
-            pkg.build()
-
-    def _cleanup(self):
-        shutil.rmtree(self._tempdir)
+    def _cleanup_build(self):
+        shutil.rmtree(self._temp_dir)

@@ -19,8 +19,7 @@ import logging
 import signal
 import sys
 
-import giftwrap.builder
-
+from giftwrap.builders import BuilderFactory
 from giftwrap.build_spec import BuildSpec
 from giftwrap.color import ColorStreamHandler
 
@@ -31,8 +30,9 @@ def _setup_logger(level=logging.INFO):
     logger = logging.getLogger()
     logger.setLevel(level)
     log_handler = ColorStreamHandler(sys.stdout)
-    fmt = logging.Formatter(fmt='%(asctime)s %(name)s %(levelname)s: '
-                            '%(message)s', datefmt='%F %H:%M:%S')
+    fmt = logging.Formatter(fmt='%(asctime)s %(threadName)s %(name)s '
+                            '%(levelname)s: %(message)s',
+                            datefmt='%F %H:%M:%S')
     log_handler.setFormatter(fmt)
     logger.addHandler(log_handler)
 
@@ -47,8 +47,8 @@ def build(args):
         with open(args.manifest, 'r') as fh:
             manifest = fh.read()
 
-        buildspec = BuildSpec(manifest, args.version, args.type)
-        builder = giftwrap.builder.create_builder(buildspec)
+        buildspec = BuildSpec(manifest, args.version, args.type, args.parallel)
+        builder = BuilderFactory.create_builder(args.type, buildspec)
 
         def _signal_handler(*args):
             LOG.info("Process interrrupted. Cleaning up.")
@@ -56,7 +56,7 @@ def build(args):
             sys.exit()
         signal.signal(signal.SIGINT, _signal_handler)
 
-        builder.build()
+        rc = builder.build()
     except Exception as e:
         LOG.exception("Oops something went wrong: %s", e)
         fail = True
@@ -64,6 +64,7 @@ def build(args):
     builder.cleanup()
     if fail:
         sys.exit(-1)
+    sys.exit(rc)
 
 
 def main():
@@ -79,7 +80,10 @@ def main():
                                          description='build giftwrap packages')
     build_subcmd.add_argument('-m', '--manifest', required=True)
     build_subcmd.add_argument('-v', '--version')
-    build_subcmd.add_argument('-t', '--type', choices=('docker', 'package'))
+    build_subcmd.add_argument('-t', '--type', choices=('docker', 'package'),
+                              required=True)
+    build_subcmd.add_argument('-s', '--synchronous', dest='parallel',
+                              action='store_false')
     build_subcmd.set_defaults(func=build)
 
     args = parser.parse_args()

@@ -22,6 +22,7 @@ from nose.plugins.logcapture import LogCapture
 
 
 class TestLog(unittest.TestCase):
+
     def test_get_logger(self):
         lc = LogCapture()
         lc.begin()
