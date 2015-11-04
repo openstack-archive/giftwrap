@@ -15,20 +15,25 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
 import unittest2 as unittest
 
 from giftwrap.builders import Builder, BUILDER_DRIVER_NAMESPACE
 from stevedore import extension
 
+BASE_DRIVERS = set(['docker', 'package'])
+
 
 class TestBuilder(unittest.TestCase):
 
     def test_default_drivers(self):
-        drivers = Builder.builder_names()
-        self.assertEqual(drivers, ['docker', 'package'])
+        drivers = set(Builder.builder_names())
+        self.assertEqual(drivers, BASE_DRIVERS)
 
     def test_additional_drivers(self):
         em = extension.ExtensionManager(BUILDER_DRIVER_NAMESPACE)
         em.extensions.append(extension.Extension('test', None, None, None))
-        drivers = Builder.builder_names(em)
-        self.assertEqual(drivers, ['docker', 'package', 'test'])
+        drivers = set(Builder.builder_names(em))
+        base_drivers = copy.copy(BASE_DRIVERS)
+        base_drivers.add('test')
+        self.assertEqual(drivers, base_drivers)
