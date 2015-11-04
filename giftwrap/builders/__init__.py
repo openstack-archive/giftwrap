@@ -19,9 +19,12 @@ import os
 import threading
 
 from giftwrap.gerrit import GerritReview
+from stevedore.driver import DriverManager
+from stevedore.extension import ExtensionManager
 
 from abc import abstractmethod, ABCMeta
 
+BUILDER_DRIVER_NAMESPACE = 'giftwrap.builder.drivers'
 LOG = logging.getLogger(__name__)
 
 
@@ -33,6 +36,12 @@ class Builder(object):
         self._temp_src_dir = None
         self._spec = spec
         self._thread_exit = []
+
+    @staticmethod
+    def builder_names(ext_mgr=None):
+        if not ext_mgr:
+            ext_mgr = ExtensionManager(BUILDER_DRIVER_NAMESPACE)
+        return ext_mgr.names()
 
     def _get_venv_pip_path(self, venv_path):
         return os.path.join(venv_path, 'bin/pip')
@@ -182,5 +191,8 @@ class BuilderFactory:
 
     @staticmethod
     def create_builder(builder_type, build_spec):
-        targetclass = "%sBuilder" % builder_type.capitalize()
-        return globals()[targetclass](build_spec)
+        driver_mgr = DriverManager(namespace=BUILDER_DRIVER_NAMESPACE,
+                                   name=builder_type,
+                                   invoke_args=(build_spec,),
+                                   invoke_on_load=True)
+        return driver_mgr.driver
