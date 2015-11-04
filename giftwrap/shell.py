@@ -19,7 +19,7 @@ import logging
 import signal
 import sys
 
-from giftwrap.builders import BuilderFactory
+from giftwrap.builders import Builder, BuilderFactory
 from giftwrap.build_spec import BuildSpec
 from giftwrap.color import ColorStreamHandler
 
@@ -80,7 +80,7 @@ def main():
                                          description='build giftwrap packages')
     build_subcmd.add_argument('-m', '--manifest', required=True)
     build_subcmd.add_argument('-v', '--version')
-    build_subcmd.add_argument('-t', '--type', choices=('docker', 'package'),
+    build_subcmd.add_argument('-t', '--type', choices=Builder.builder_names(),
                               required=True)
     build_subcmd.add_argument('-s', '--synchronous', dest='parallel',
                               action='store_false')

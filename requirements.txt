@@ -9,3 +9,4 @@ requests
 pygerrit
 docker-py
 virtualenv
+stevedore
