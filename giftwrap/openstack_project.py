@@ -24,7 +24,7 @@ DEFAULT_GITURL = {
     'stackforge': 'https://github.com/stackforge/'
 }
 DEFAULT_VENV_COMMAND = "virtualenv --no-wheel ."
-DEFAULT_INSTALL_COMMAND = "./bin/pip install %s"  # noqa
+DEFAULT_INSTALL_COMMAND = "./bin/pip install '%s'"  # noqa
 
 TEMPLATE_VARS = ('name', 'version', 'gitref', 'stackforge')
 
