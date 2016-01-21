@@ -22,7 +22,8 @@ from giftwrap.settings import Settings
 
 class BuildSpec(object):
 
-    def __init__(self, manifest, version, build_type=None, parallel=True):
+    def __init__(self, manifest, version, build_type=None, parallel=True,
+                 limit_projects=None):
         self._manifest = yaml.load(manifest)
         self.version = version
         self.build_type = build_type
@@ -35,13 +36,14 @@ class BuildSpec(object):
             parallel = False
         manifest_settings['parallel_build'] = parallel
         self.settings = Settings.factory(manifest_settings)
-        self.projects = self._render_projects()
+        self.projects = self._render_projects(limit_projects)
 
-    def _render_projects(self):
+    def _render_projects(self, limit_projects):
         projects = []
         if 'projects' in self._manifest:
             for project in self._manifest['projects']:
-                projects.append(OpenstackProject.factory(self.settings,
-                                                         project,
-                                                         self.version))
+                if limit_projects is None or project['name'] in limit_projects:
+                    projects.append(OpenstackProject.factory(self.settings,
+                                                             project,
+                                                             self.version))
         return projects
