@@ -47,7 +47,8 @@ def build(args):
         with open(args.manifest, 'r') as fh:
             manifest = fh.read()
 
-        buildspec = BuildSpec(manifest, args.version, args.type, args.parallel)
+        buildspec = BuildSpec(manifest, args.version, args.type, args.parallel,
+                              args.projects)
         builder = BuilderFactory.create_builder(args.type, buildspec)
 
         def _signal_handler(*args):
@@ -84,6 +85,12 @@ def main():
                               required=True)
     build_subcmd.add_argument('-s', '--synchronous', dest='parallel',
                               action='store_false')
+
+    def csvarg(arg):
+        if arg is not None:
+            return arg.split(',')
+
+    build_subcmd.add_argument('-p', '--projects', type=csvarg, dest='projects')
     build_subcmd.set_defaults(func=build)
 
     args = parser.parse_args()
