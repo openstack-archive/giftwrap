@@ -85,7 +85,12 @@ def main():
                               required=True)
     build_subcmd.add_argument('-s', '--synchronous', dest='parallel',
                               action='store_false')
-    build_subcmd.add_argument('-p', '--projects', nargs='*', dest='projects')
+
+    def csvarg(arg):
+        if arg is not None:
+            return arg.split(',')
+
+    build_subcmd.add_argument('-p', '--projects', type=csvarg, dest='projects')
     build_subcmd.set_defaults(func=build)
 
     args = parser.parse_args()
