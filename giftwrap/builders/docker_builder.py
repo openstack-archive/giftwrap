@@ -85,7 +85,7 @@ class DockerBuilder(Builder):
     def _install_pip_dependencies(self, venv_path, dependencies):
         pip_path = self._get_venv_pip_path(venv_path)
         for dependency in dependencies:
-            self._execute("%s install %s" % (pip_path, dependency))
+            self._execute("%s install '%s'" % (pip_path, dependency))
 
     def _copy_sample_config(self, src_clone_dir, project):
         src_config = os.path.join(src_clone_dir, 'etc')
