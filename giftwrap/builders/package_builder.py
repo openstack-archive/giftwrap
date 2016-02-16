@@ -74,7 +74,7 @@ class PackageBuilder(Builder):
         for constraint in self._constraints:
             install = "%s -c %s" % (install, constraint)
         for dependency in dependencies:
-            self._execute("%s %s %s" % (pip_path, install, dependency))
+            self._execute("%s %s '%s'" % (pip_path, install, dependency))
 
     def _copy_sample_config(self, src_clone_dir, project):
         src_config = os.path.join(src_clone_dir, 'etc')
