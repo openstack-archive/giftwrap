@@ -139,7 +139,7 @@ class Builder(object):
         return
 
     @abstractmethod
-    def _make_dir(self, path, mode=0777):
+    def _make_dir(self, path, mode=0o777):
         return
 
     @abstractmethod
