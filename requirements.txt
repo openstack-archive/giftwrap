@@ -1,7 +1,7 @@
 argparse
 colorama
 pbr
-GitPython==0.3.2.RC1
+GitPython
 giturlparse.py
 pyyaml
 jinja2
