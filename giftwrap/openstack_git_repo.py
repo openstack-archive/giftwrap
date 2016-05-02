@@ -19,7 +19,11 @@ import logging
 import os
 import re
 import time
-import urlparse
+# Handle python3 urlparse
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 
 from giftwrap.openstack_commit import OpenstackCommit
 from git import Repo
@@ -54,7 +58,7 @@ class OpenstackGitRepo(object):
     @property
     def project(self):
         if not self._project:
-            parsed_url = urlparse.urlparse(self.url)
+            parsed_url = urlparse(self.url)
             project = os.path.splitext(parsed_url.path)[0]
             self._project = re.sub(r'^/', '', project)
         return self._project

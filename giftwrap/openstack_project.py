@@ -14,7 +14,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 
-import urlparse
+# Handle python3 urlparse
+try:
+    from urllib.parse import urljoin
+except ImportError:
+    from urlparse import urljoin
 
 from jinja2 import Environment
 
@@ -70,7 +74,7 @@ class OpenstackProject(object):
             key = 'openstack'
             if self.stackforge:
                 key = 'stackforge'
-            self._giturl = urlparse.urljoin(DEFAULT_GITURL[key], self.name)
+            self._giturl = urljoin(DEFAULT_GITURL[key], self.name)
         return self._giturl
 
     @property

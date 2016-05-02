@@ -67,7 +67,7 @@ class DockerBuilder(Builder):
         return "/tmp/giftwrap"
         self._commands.append("mktemp -d -t %s.XXXXXXXXXX" % prefix)
 
-    def _make_dir(self, path, mode=0777):
+    def _make_dir(self, path, mode=0o777):
         self._commands.append("mkdir -p -m %o %s" % (mode, path))
 
     def _prepare_project_build(self, project):
@@ -101,13 +101,13 @@ class DockerBuilder(Builder):
     def _finalize_project_build(self, project):
         self._commands.append("rm -rf %s" % self._temp_dir)
         for command in self._commands:
-            print command
+            print(command)
 
     def _finalize_build(self):
         template_vars = {
             'commands': self._commands
         }
-        print self._render_dockerfile(template_vars)
+        print(self._render_dockerfile(template_vars))
         self._build_image()
 
     def _cleanup_build(self):

@@ -40,7 +40,7 @@ class PackageBuilder(Builder):
     def _make_temp_dir(self, prefix='giftwrap'):
         return tempfile.mkdtemp(prefix)
 
-    def _make_dir(self, path, mode=0777):
+    def _make_dir(self, path, mode=0o777):
         os.makedirs(path, mode)
 
     def _prepare_build(self):
