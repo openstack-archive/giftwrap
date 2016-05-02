@@ -19,7 +19,11 @@ import logging
 import os
 import re
 import time
-import urlparse
+# Handle python3 urlparse
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 
 from giftwrap.openstack_commit import OpenstackCommit
 from git import Repo
