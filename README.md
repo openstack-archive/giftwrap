@@ -35,7 +35,7 @@ Dependencies
 Development
 -----------
 
-    $ git clone https://github.com/blueboxgroup/giftwrap.git
+    $ git clone https://github.com/openstack/giftwrap.git
     $ vagrant up
 
 Testing
