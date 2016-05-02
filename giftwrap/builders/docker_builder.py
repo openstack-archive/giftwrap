@@ -67,7 +67,7 @@ class DockerBuilder(Builder):
         return "/tmp/giftwrap"
         self._commands.append("mktemp -d -t %s.XXXXXXXXXX" % prefix)
 
-    def _make_dir(self, path, mode=0777):
+    def _make_dir(self, path, mode=0o777):
         self._commands.append("mkdir -p -m %o %s" % (mode, path))
 
     def _prepare_project_build(self, project):
