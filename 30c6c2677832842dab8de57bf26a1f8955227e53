@@ -1,0 +1,9 @@
+Code-Review+1: Tripp Waldrop <iamtripp@gmail.com>
+Code-Review+2: craigtracey <craigtracey@gmail.com>
+Workflow+1: craigtracey <craigtracey@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Thu, 05 May 2016 00:20:45 +0000
+Reviewed-on: https://review.openstack.org/312278
+Project: openstack/giftwrap
+Branch: refs/heads/master
