@@ -10,3 +10,4 @@ pygerrit
 docker-py
 virtualenv
 stevedore
+urllib3>=1.15.1
