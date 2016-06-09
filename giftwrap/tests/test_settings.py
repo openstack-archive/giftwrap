@@ -22,7 +22,8 @@ from giftwrap import settings
 SAMPLE_SETTINGS = {
     'package_name_format': 'my-package-name',
     'version': '1.2',
-    'base_path': '/basepath'
+    'base_path': '/basepath',
+    'constraints': ['http://example.txt'],
 }
 
 
@@ -35,6 +36,7 @@ class TestSettings(unittest.TestCase):
         self.assertEquals('my-package-name', s.package_name_format)
         self.assertEquals('1.2', s.version)
         self.assertEquals('/basepath', s.base_path)
+        self.assertEquals('http://example.txt', s.constraints[0])
 
     def test_factory_has_default_base_path(self):
         settings_dict = {'version': 'version'}
