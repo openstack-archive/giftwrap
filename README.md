@@ -59,10 +59,11 @@ giftwrap is pretty simple. The basic flow is something like this:
 3. giftwrap will clone the git repo and git ref that you specify for each of the OpenStack projects
 4. giftwrap will find the closest Gerrit Change-Id and retrieve it's build logs
 5. From the build logs, giftwrap will find the pip dependencies used for that build and record them.
-6. A new virtualenv will be built with the pip dependencies found
-7. The OpenStack project code will be installed into the same virtualenv; but with locked pip dependencies
-8. giftwrap will check [devstack](https://devstack.org) for the system dependencies necessary for that project (to be done)
-9. An [fpm](https://github.com/jordansissel/fpm) package will be built from the intersection of the python install and system dependencies
+6. If configured, giftwrap will fetch a constraints file to use to constrain the versions of things installed.
+7. A new virtualenv will be built with the pip dependencies found
+8. The OpenStack project code will be installed into the same virtualenv; but with locked pip dependencies
+9. giftwrap will check [devstack](https://devstack.org) for the system dependencies necessary for that project (to be done)
+10. An [fpm](https://github.com/jordansissel/fpm) package will be built from the intersection of the python install and system dependencies
 
 DockerDockerDockerDockerDocker
 ------------------------------
