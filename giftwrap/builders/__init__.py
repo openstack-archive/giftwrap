@@ -18,6 +18,8 @@ import logging
 import os
 import threading
 
+import requests
+
 from giftwrap.gerrit import GerritReview
 from stevedore.driver import DriverManager
 from stevedore.extension import ExtensionManager
@@ -36,6 +38,7 @@ class Builder(object):
         self._temp_src_dir = None
         self._spec = spec
         self._thread_exit = []
+        self.constraints = []
 
     @staticmethod
     def builder_names(ext_mgr=None):
@@ -54,6 +57,31 @@ class Builder(object):
             LOG.warning("Could not install gerrit dependencies!!! "
                         "Error was: %s", e)
             return []
+
+    def _get_constraints(self):
+        cfiles = []
+        cfilenum = 0
+        try:
+            for constraint_url in self._spec.settings.constraints:
+                response = requests.get(constraint_url)
+
+                # Raise an error if we got a bad URL
+                response.raise_for_status()
+
+                constraints = response.text.encode('utf-8')
+                cfilepath = os.path.join(self._temp_dir,
+                                         'constraints-%s.txt' % cfilenum)
+
+                with open(cfilepath, 'w') as cfile:
+                    cfile.write(constraints)
+
+                cfiles.append(cfilepath)
+                cfilenum += 1
+
+            return cfiles
+
+        except Exception as e:
+            raise Exception("Unable to construct constraints. Error: %s" % e)
 
     def _build_project(self, project):
         try:
@@ -104,6 +132,9 @@ class Builder(object):
         self._temp_dir = self._make_temp_dir()
         self._temp_src_dir = os.path.join(self._temp_dir, 'src')
         LOG.debug("Temporary working directory: %s", self._temp_dir)
+
+        # get constraints paths
+        self.constraints = self._get_constraints()
 
         threads = []
         for project in spec.projects:
