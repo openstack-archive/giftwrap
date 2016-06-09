@@ -31,9 +31,11 @@ class Settings(object):
                  package_name_format=None, version=None,
                  base_path=None, install_path=None, gerrit_dependencies=True,
                  force_overwrite=False, output_dir=None, include_config=True,
-                 parallel_build=True):
+                 parallel_build=True, constraints=[]):
         if not version:
             raise Exception("'version' is a required settings")
+        if not isinstance(constraints, list):
+            raise Exception("'constraints' is required to be a list")
         self.build_type = build_type
         self._package_name_format = package_name_format
         self.version = version
@@ -44,6 +46,7 @@ class Settings(object):
         self._output_dir = output_dir
         self.include_config = include_config
         self.parallel_build = parallel_build
+        self.constraints = constraints
 
     @property
     def package_name_format(self):
