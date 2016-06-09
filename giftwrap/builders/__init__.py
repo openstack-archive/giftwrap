@@ -18,6 +18,8 @@ import logging
 import os
 import threading
 
+import requests
+
 from giftwrap.gerrit import GerritReview
 from stevedore.driver import DriverManager
 from stevedore.extension import ExtensionManager
@@ -36,6 +38,7 @@ class Builder(object):
         self._temp_src_dir = None
         self._spec = spec
         self._thread_exit = []
+        self._constraints_path = None
 
     @staticmethod
     def builder_names(ext_mgr=None):
@@ -54,6 +57,25 @@ class Builder(object):
             LOG.warning("Could not install gerrit dependencies!!! "
                         "Error was: %s", e)
             return []
+
+    def _get_upper_constraints(self):
+        try:
+            curl = self._spec.settings.upper_constraints
+            response = requests.get(curl)
+
+            response.raise_for_status()
+
+            constraints = response.text.encode('utf-8')
+
+            cfile = os.path.join(self._temp_src_dir, 'constraints.txt')
+
+            with open(cfile, 'w') as f:
+                f.write(constraints)
+
+            return cfile
+
+        except Exception as e:
+            raise Exception("Unable to construct constraints. Error: %s" % e)
 
     def _build_project(self, project):
         try:
@@ -80,6 +102,9 @@ class Builder(object):
 
             if self._spec.settings.include_config:
                 self._copy_sample_config(src_clone_dir, project)
+
+            if self._spec.settings.upper_constraints:
+                self._constraints_path = self._get_upper_constraints()
 
             self._install_project(project.install_path, src_clone_dir)
 
