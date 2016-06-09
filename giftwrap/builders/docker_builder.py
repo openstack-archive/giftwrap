@@ -84,8 +84,11 @@ class DockerBuilder(Builder):
 
     def _install_pip_dependencies(self, venv_path, dependencies):
         pip_path = self._get_venv_pip_path(venv_path)
+        install = "install"
+        if self._constraints:
+            install += " -c %s" % self._constraints
         for dependency in dependencies:
-            self._execute("%s install %s" % (pip_path, dependency))
+            self._execute("%s %s %s" % (pip_path, install, dependency))
 
     def _copy_sample_config(self, src_clone_dir, project):
         src_config = os.path.join(src_clone_dir, 'etc')
@@ -96,7 +99,10 @@ class DockerBuilder(Builder):
 
     def _install_project(self, venv_path, src_clone_dir):
         pip_path = self._get_venv_pip_path(venv_path)
-        self._execute("%s install %s" % (pip_path, src_clone_dir))
+        install = "install"
+        if self._constraints:
+            install += " -c %s" % self._constraints
+        self._execute("%s %s %s" % (pip_path, install, src_clone_dir))
 
     def _finalize_project_build(self, project):
         self._commands.append("rm -rf %s" % self._temp_dir)

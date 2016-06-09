@@ -16,6 +16,7 @@
 
 import logging
 import os
+import requests
 import threading
 
 from giftwrap.gerrit import GerritReview
@@ -36,6 +37,7 @@ class Builder(object):
         self._temp_src_dir = None
         self._spec = spec
         self._thread_exit = []
+        self._constraints = None
 
     @staticmethod
     def builder_names(ext_mgr=None):
@@ -54,6 +56,27 @@ class Builder(object):
             LOG.warning("Could not install gerrit dependencies!!! "
                         "Error was: %s", e)
             return []
+
+    def _get_upper_constraints(self):
+        try:
+            curl = self._spec.settings.upper_constraints
+            response = requests.get(curl)
+
+            if response.status_code != 200:
+                raise Exception("Unable to get constraints at %s. Error: %d" %
+                                (curl, response.status_code))
+
+            constraints = response.text.encode('utf-8')
+
+            cfile = os.path.join(self._temp_src_dir, 'constraints.txt')
+
+            with open(cfile, 'w') as f:
+                f.write(constraints)
+
+            return cfile
+
+        except Exception as e:
+            raise Exception("Unable to construct constraints. Error: %s" % e)
 
     def _build_project(self, project):
         try:
@@ -80,6 +103,9 @@ class Builder(object):
 
             if self._spec.settings.include_config:
                 self._copy_sample_config(src_clone_dir, project)
+
+            if self._spec.settings.upper_constraints:
+                self._constraints = self._get_upper_constraints()
 
             self._install_project(project.install_path, src_clone_dir)
 
