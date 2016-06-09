@@ -2,10 +2,11 @@
 settings:
   package_name_format: 'openstack-{{ project.name }}-{{ settings.version }}'
   build_type: package
-  version: '10.0-bbc1'
+  version: '2016.1-bbc1'
   base_path: '/opt/bbc/openstack-{{ settings.version }}'
   force_overwrite: true
+  upper_constraints: 'https://raw.githubusercontent.com/openstack/requirements/stable/mitaka/upper-constraints.txt'
 
 projects:
   - name: glance
-    gitref: stable/juno
+    gitref: stable/mitaka
