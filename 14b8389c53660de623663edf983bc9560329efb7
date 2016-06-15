@@ -1,0 +1,8 @@
+Code-Review+2: craigtracey <craigtracey@gmail.com>
+Workflow+1: craigtracey <craigtracey@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Wed, 15 Jun 2016 18:18:42 +0000
+Reviewed-on: https://review.openstack.org/327932
+Project: openstack/giftwrap
+Branch: refs/heads/master
