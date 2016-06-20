@@ -112,7 +112,7 @@ class Builder(object):
             if project.postinstall_dependencies:
                 dependencies = project.postinstall_dependencies
                 self._install_pip_dependencies(project.install_path,
-                                               dependencies)
+                                               dependencies, False)
 
             # finish up
             self._finalize_project_build(project)
@@ -188,7 +188,8 @@ class Builder(object):
         return
 
     @abstractmethod
-    def _install_pip_dependencies(self, venv_path, dependencies):
+    def _install_pip_dependencies(self, venv_path, dependencies,
+                                  use_constraints=True):
         return
 
     @abstractmethod

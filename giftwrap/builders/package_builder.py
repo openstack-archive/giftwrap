@@ -68,11 +68,14 @@ class PackageBuilder(Builder):
     def _create_virtualenv(self, venv_command, path):
         self._execute(venv_command, path)
 
-    def _install_pip_dependencies(self, venv_path, dependencies):
+    def _install_pip_dependencies(self, venv_path, dependencies,
+                                  use_constraints=True):
         pip_path = self._get_venv_pip_path(venv_path)
         install = "install"
-        for constraint in self._constraints:
-            install = "%s -c %s" % (install, constraint)
+        if use_constraints:
+            for constraint in self._constraints:
+                install = "%s -c %s" % (install, constraint)
+
         for dependency in dependencies:
             self._execute("%s %s %s" % (pip_path, install, dependency))
 
