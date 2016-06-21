@@ -111,3 +111,11 @@ class PackageBuilder(Builder):
 
     def _cleanup_build(self):
         shutil.rmtree(self._temp_dir)
+        for project in self._spec.projects:
+            install_path = project.install_path
+            do_deletion = (self._spec.settings.force_overwrite and
+                           os.path.exists(install_path))
+            if do_deletion:
+                LOG.info("force_overwrite is set, so removing "
+                         "path created for build '%s'" % install_path)
+                shutil.rmtree(install_path)

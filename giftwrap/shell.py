@@ -62,7 +62,8 @@ def build(args):
         LOG.exception("Oops something went wrong: %s", e)
         fail = True
 
-    builder.cleanup()
+    if builder:
+        builder.cleanup()
     if fail:
         sys.exit(-1)
     sys.exit(rc)
