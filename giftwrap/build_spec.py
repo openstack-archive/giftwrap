@@ -14,6 +14,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 
+import os
+
+import git
 import yaml
 
 from giftwrap.openstack_project import OpenstackProject
@@ -39,6 +42,39 @@ class BuildSpec(object):
         self.projects = self._render_projects(limit_projects)
 
     def _render_projects(self, limit_projects):
+        if 'superrepo' in self._manifest:
+            if 'projects' not in self._manifest:
+                self._manifest['projects'] = []
+            existing_project_names = set()
+            for project in self._manifest['projects']:
+                existing_project_names.add(project['name'])
+            # Read all dirs with a setup.py as projects
+            repo = git.Repo(self._manifest['superrepo'])
+            try:
+                # Try it as a branch
+                repo.heads[self.version].checkout()
+            except IndexError:
+                # Nope, detach head
+                repo.head.reference = repo.commit(self.version)
+            for subdir in os.listdir(repo.working_tree_dir):
+                # Skip any projects explicitly in the manifest
+                if subdir in existing_project_names:
+                    continue
+                subpath = os.path.join(repo.working_tree_dir, subdir)
+                if not os.path.exists(os.path.join(subpath, 'setup.py')):
+                    continue
+                # skip non git repos since we won't be able to figure out a
+                # version
+                try:
+                    subrepo = git.Repo(os.path.join(repo.working_tree_dir,
+                                                    subdir))
+                except git.exc.InvalidGitRepositoryError:
+                    continue
+                project = {}
+                project['gitref'] = subrepo.head.commit.hexsha
+                project['name'] = subdir
+                project['giturl'] = subrepo.working_tree_dir
+                self._manifest['projects'].append(project)
         projects = []
         if 'projects' in self._manifest:
             for project in self._manifest['projects']:
