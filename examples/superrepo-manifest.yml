@@ -1,0 +1,8 @@
+---
+settings:
+  package_name_format: 'openstack-{{ project.name }}-{{ settings.version }}'
+  build_type: package
+  version: master
+  base_path: '/opt/bbc/openstack-{{ settings.version }}'
+  force_overwrite: true
+superrepo: /srv/git/openstack

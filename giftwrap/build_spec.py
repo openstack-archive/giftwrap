@@ -14,6 +14,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 
+import git
 import yaml
 
 from giftwrap.openstack_project import OpenstackProject
@@ -39,6 +40,29 @@ class BuildSpec(object):
         self.projects = self._render_projects(limit_projects)
 
     def _render_projects(self, limit_projects):
+        if 'superrepo' in self._manifest:
+            if 'projects' not in self._manifest:
+                self._manifest['projects'] = []
+            existing_project_names = set()
+            for project in self._manifest['projects']:
+                existing_project_names.add(project['name'])
+            # Read all submodules from superrepo as projects
+            repo = git.Repo(self._manifest['superrepo'])
+            try:
+                # Try it as a branch
+                repo.heads[self.version].checkout()
+            except IndexError:
+                # Nope, detach head
+                repo.head.reference = repo.commit(self.version)
+            for sm in repo.submodules:
+                # Skip any projects explicitly in the manifest
+                if sm.name in existing_project_names:
+                    continue
+                project = {}
+                project['gitref'] = sm.hexsha
+                project['name'] = sm.name
+                project['giturl'] = sm.url
+                self._manifest['projects'].append(project)
         projects = []
         if 'projects' in self._manifest:
             for project in self._manifest['projects']:

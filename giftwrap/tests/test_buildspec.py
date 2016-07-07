@@ -15,13 +15,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import os
 import tempfile
 import unittest2 as unittest
 
+import git
 import yaml
 
 from giftwrap import build_spec
 from giftwrap.settings import Settings
+from giftwrap.tests import utils
 
 
 class TestBuildSpec(unittest.TestCase):
@@ -59,3 +62,24 @@ class TestBuildSpec(unittest.TestCase):
             self.assertEqual(2, len(bs.projects))
             for project in bs.projects:
                 self.assertEqual('99', project.version)
+
+    @utils.make_test_repo("parentrepo")
+    @utils.make_test_repo("childrepo")
+    def test_build_spec_superrepo(self, parentrepo, childrepo):
+        parentrepo = git.Repo(parentrepo)
+        childname = os.path.basename(childrepo)
+        parentrepo.create_submodule(childname, childname, url=childrepo)
+        parentrepo.index.commit('adding child repo')
+        parenthash = parentrepo.head.commit.hexsha
+        childhash = parentrepo.submodules[0].module().head.commit.hexsha
+        manifest = {
+            'settings': {},
+            'superrepo': parentrepo.working_tree_dir,
+        }
+        with tempfile.TemporaryFile(mode='w+') as tf:
+            yaml.safe_dump(manifest, tf)
+            tf.flush()
+            tf.seek(0)
+            bs = build_spec.BuildSpec(tf, parenthash)
+            self.assertEqual(1, len(bs.projects))
+            self.assertEqual(childhash, bs.projects[0].gitref)
