@@ -33,24 +33,26 @@ def _make_outdir(test):
     return wrapper
 
 
-def _make_test_repo(test):
-    def wrapper(*args, **kwargs):
-        startdir = os.getcwd()
-        try:
-            testrepo = tempfile.mkdtemp()
-            kwargs['testrepo'] = testrepo
-            os.chdir(testrepo)
-            subprocess.check_call(['git', 'init'])
-            tf_path = os.path.join(testrepo, 'testfile.txt')
-            with open(tf_path, 'w') as tf:
-                tf.write('test content')
-            subprocess.check_call(['git', 'add', 'testfile.txt'])
-            subprocess.check_call(['git', 'commit', '-m', 'test commit'])
-            os.chdir(startdir)
-            return test(*args, **kwargs)
-        finally:
-            shutil.rmtree(testrepo)
-    return wrapper
+def _make_test_repo(name='testrepo'):
+    def decorator(test):
+        def wrapper(*args, **kwargs):
+            startdir = os.getcwd()
+            try:
+                testrepo = tempfile.mkdtemp()
+                kwargs[name] = testrepo
+                os.chdir(testrepo)
+                subprocess.check_call(['git', 'init'])
+                tf_path = os.path.join(testrepo, 'testfile.txt')
+                with open(tf_path, 'w') as tf:
+                    tf.write('test content')
+                subprocess.check_call(['git', 'add', 'testfile.txt'])
+                subprocess.check_call(['git', 'commit', '-m', 'test commit'])
+                os.chdir(startdir)
+                return test(*args, **kwargs)
+            finally:
+                shutil.rmtree(testrepo)
+        return wrapper
+    return decorator
 
 
 class TestRepo(unittest.TestCase):
@@ -68,11 +70,38 @@ class TestRepo(unittest.TestCase):
         except AttributeError:
             self.assertTrue(True)
 
-    @_make_outdir
     @_make_test_repo
+    @_make_outdir
     def test_repo_clone(self, outdir, testrepo):
         repo = OpenstackGitRepo(testrepo, project='bobafett')
         repo.clone(outdir)
         self.assertTrue(repo.cloned)
         self.assertTrue(isinstance(repo.head, OpenstackCommit))
         self.assertEquals(['HEAD', 'master'], repo.branches)
+
+    @_make_test_repo('childrepo')
+    @_make_test_repo('parentrepo')
+    @_make_outdir
+    def test_superrepo(self, outdir, parentrepo, childrepo):
+        # Add child as submodule in parent
+        try:
+            startdir = os.getcwd()
+            os.chdir(parentrepo)
+            # -f is needed because git usually ignores /tmp dirs
+            moduleremote = "file://{}".format(childrepo)
+            subprocess.check_call(['git', 'submodule', 'add', '-f',
+                                    moduleremote])
+            subprocess.check_call(['git', 'commit', '-m', 'adding submodule'])
+        finally:
+            os.chdir(startdir)
+        self.assertTrue(
+            os.path.exists(
+                os.path.join(parentrepo, os.path.basename(childrepo))))
+        repo = OpenstackGitRepo(childrepo, superrepo=parentrepo)
+        repo.clone(outdir)
+        self.assertTrue(repo.cloned)
+        self.assertTrue(isinstance(repo.head, OpenstackCommit))
+        self.assertEquals(['HEAD', 'master'], repo.branches)
+        self.assertTrue(
+            os.path.exists(
+                os.path.join(outdir, os.path.basename(childrepo))))
