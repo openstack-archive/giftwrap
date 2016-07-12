@@ -62,12 +62,16 @@ class Builder(object):
         cfiles = []
         try:
             for i, cons_url in enumerate(self._spec.settings.constraints):
-                response = requests.get(cons_url)
+                if cons_url.startswith('/') or cons_url.startswith('.'):
+                    with open(cons_url, 'rb') as cf:
+                        constraints = cf.read()
+                else:
+                    response = requests.get(cons_url)
 
-                # Raise an error if we got a bad URL
-                response.raise_for_status()
+                    # Raise an error if we got a bad URL
+                    response.raise_for_status()
 
-                constraints = response.text.encode('utf-8')
+                    constraints = response.text.encode('utf-8')
                 cfilepath = os.path.join(self._temp_dir,
                                          'constraints-%s.txt' % i)
 
