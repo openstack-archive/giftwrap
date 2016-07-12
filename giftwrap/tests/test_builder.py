@@ -103,17 +103,29 @@ class FakeBuilder(Builder):
 class TestBuilderBuilds(unittest.TestCase):
 
     @mock.patch('requests.get')
-    def test_build(self, requests_mock):
+    def _test_build(self, constraints, requests_mock):
         response = mock.MagicMock('response')
         response.raise_for_status = mock.MagicMock('raise_for_status')
         response.text = '# no constraints\n'
         requests_mock.return_value = response
         spec = mock.MagicMock('spec')
         spec.settings = mock.MagicMock('settings')
-        spec.settings.constraints = ['http://noexist.test/constraints.txt']
+        spec.settings.constraints = constraints
         spec.settings.parallel_build = False
         spec.projects = []
         x = FakeBuilder(spec)
         x.build()
+        return requests_mock
+
+    def test_build(self):
+        requests_mock = self._test_build(
+            ['http://noexist.test/constraints.txt'])
         requests_mock.assert_called_once_with(
             'http://noexist.test/constraints.txt')
+
+    def test_build_local_constraints(self):
+        with tempfile.NamedTemporaryFile('wb') as tf:
+            tf.write(b'# no local constraints\n')
+            tf.flush()
+            requests_mock = self._test_build([tf.name])
+        requests_mock.assert_not_called()
