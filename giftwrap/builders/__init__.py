@@ -71,7 +71,7 @@ class Builder(object):
                 cfilepath = os.path.join(self._temp_dir,
                                          'constraints-%s.txt' % i)
 
-                with open(cfilepath, 'w') as cfile:
+                with open(cfilepath, 'wb') as cfile:
                     cfile.write(constraints)
 
                 cfiles.append(cfilepath)
