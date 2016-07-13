@@ -22,7 +22,7 @@ import os
 import re
 import tempfile
 
-from giftwrap.builders import Builder
+from giftwrap.builders import PipBuilder
 
 LOG = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ APT_REQUIRED_PACKAGES = [
 DEFAULT_SRC_PATH = '/opt/openstack'
 
 
-class DockerBuilder(Builder):
+class DockerBuilder(PipBuilder):
 
     def __init__(self, spec):
         self.base_image = 'ubuntu:14.04'
@@ -99,13 +99,6 @@ class DockerBuilder(Builder):
 
         self._commands.append("if [ -d %s ]; then cp -R %s %s; fi" % (
             src_config, src_config, dest_config))
-
-    def _install_project(self, venv_path, src_clone_dir):
-        pip_path = self._get_venv_pip_path(venv_path)
-        install = "install"
-        for constraint in self._constraints:
-            install = "%s -c %s" % (install, constraint)
-        self._execute("%s %s %s" % (pip_path, install, src_clone_dir))
 
     def _finalize_project_build(self, project):
         self._commands.append("rm -rf %s" % self._temp_dir)

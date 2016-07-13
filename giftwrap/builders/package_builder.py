@@ -20,7 +20,7 @@ import os
 import shutil
 import tempfile
 
-from giftwrap.builders import Builder
+from giftwrap.builders import PipBuilder
 from giftwrap.openstack_git_repo import OpenstackGitRepo
 from giftwrap.package import Package
 from giftwrap.util import execute
@@ -28,7 +28,7 @@ from giftwrap.util import execute
 LOG = logging.getLogger(__name__)
 
 
-class PackageBuilder(Builder):
+class PackageBuilder(PipBuilder):
 
     def __init__(self, spec):
         self._temp_dir = None
@@ -90,13 +90,6 @@ class PackageBuilder(Builder):
             LOG.debug("Copying config from '%s' to '%s'", src_config,
                       dest_config)
             distutils.dir_util.copy_tree(src_config, dest_config)
-
-    def _install_project(self, venv_path, src_clone_dir):
-        pip_path = self._get_venv_pip_path(venv_path)
-        install = "install"
-        for constraint in self._constraints:
-            install = "%s -c %s" % (install, constraint)
-        self._execute("%s %s %s" % (pip_path, install, src_clone_dir))
 
     def _finalize_project_build(self, project):
         # build the package

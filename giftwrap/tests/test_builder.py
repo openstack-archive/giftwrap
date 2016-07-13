@@ -24,7 +24,9 @@ except:
     import mock
 import unittest2 as unittest
 
-from giftwrap.builders import Builder, BUILDER_DRIVER_NAMESPACE
+from giftwrap.builders import (Builder,
+                               PackageBuilder,
+                               BUILDER_DRIVER_NAMESPACE)
 from stevedore import extension
 
 BASE_DRIVERS = set(['docker', 'package'])
@@ -101,6 +103,12 @@ class FakeBuilder(Builder):
 
 
 class TestBuilderBuilds(unittest.TestCase):
+    def _get_spec_mock(self):
+        spec = mock.MagicMock('spec')
+        spec.settings = mock.MagicMock('settings')
+        spec.settings.parallel_build = False
+        spec.projects = []
+        return spec
 
     @mock.patch('requests.get')
     def _test_build(self, constraints, requests_mock):
@@ -109,10 +117,8 @@ class TestBuilderBuilds(unittest.TestCase):
         response.text = '# no constraints\n'
         requests_mock.return_value = response
         spec = mock.MagicMock('spec')
-        spec.settings = mock.MagicMock('settings')
+        spec = self._get_spec_mock()
         spec.settings.constraints = constraints
-        spec.settings.parallel_build = False
-        spec.projects = []
         x = FakeBuilder(spec)
         x.build()
         return requests_mock
@@ -129,3 +135,32 @@ class TestBuilderBuilds(unittest.TestCase):
             tf.flush()
             requests_mock = self._test_build([tf.name])
         requests_mock.assert_not_called()
+
+    def test_get_constraints_removes_projects(self):
+        with tempfile.NamedTemporaryFile('wb') as tf:
+            tf.write(b'# comment\nfooproject==1.0\n')
+            tf.flush()
+            spec = self._get_spec_mock()
+            spec.settings.constraints = [tf.name]
+            project = mock.MagicMock('project')
+            project.name = 'fooproject'
+            spec.projects = [project]
+            x = PackageBuilder(spec)
+            x._temp_dir = x._make_temp_dir()
+            venv_path = '/noexist/venv'
+            src_clone_dir = '/noexist/src'
+            project.name = 'fooproject'
+            x._execute = mock.MagicMock('_execute')
+            x._constraints = x._get_constraints()
+            x._install_project(venv_path, src_clone_dir, project)
+            self.assertTrue(x._execute.called)
+            cmdargs = x._execute.call_args[0][0].split(' ')
+            constraint_next = False
+            for arg in cmdargs:
+                if arg == '-c':
+                    constraint_next = True
+                    continue
+                if constraint_next:
+                    with open(arg) as constraint:
+                        self.assertEqual("# comment\n", constraint.read())
+                    break
