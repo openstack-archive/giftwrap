@@ -111,7 +111,7 @@ class Builder(object):
             if self._spec.settings.include_config:
                 self._copy_sample_config(src_clone_dir, project)
 
-            self._install_project(project.install_path, src_clone_dir)
+            self._install_project(project.install_path, src_clone_dir, project)
 
             if project.postinstall_dependencies:
                 dependencies = project.postinstall_dependencies
@@ -201,7 +201,7 @@ class Builder(object):
         return
 
     @abstractmethod
-    def _install_project(self, venv_path, src_clone_dir):
+    def _install_project(self, venv_path, src_clone_dir, project):
         return
 
     @abstractmethod
@@ -215,6 +215,30 @@ class Builder(object):
     @abstractmethod
     def _cleanup_build(self):
         return
+
+
+class PipBuilder(Builder):
+    def _install_project(self, venv_path, src_clone_dir, project):
+        pip_path = self._get_venv_pip_path(venv_path)
+        install = "install"
+        for constraint in self._constraints:
+            with open(constraint, 'r') as constraint_content:
+                orig = constraint_content.read()
+            editted_constraint = '%s.editted' % constraint
+            with open(editted_constraint, 'w') as new_constraint:
+                editted = False
+                for orig_line in orig.split('\n'):
+                    if orig_line.startswith("%s==" % project.name):
+                        editted = True
+                        LOG.info('Removed project {} from '
+                                 'constraints'.format(orig_line.strip()))
+                        continue
+                    if orig_line:
+                        new_constraint.write("%s\n" % orig_line)
+            if editted:
+                constraint = editted_constraint
+            install = "%s -c %s" % (install, constraint)
+        self._execute("%s %s %s" % (pip_path, install, src_clone_dir))
 
 
 from giftwrap.builders.package_builder import PackageBuilder  # noqa
