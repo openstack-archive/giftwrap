@@ -65,7 +65,8 @@ class TestBuildSpec(unittest.TestCase):
 
     @utils.make_test_repo("parentrepo")
     @utils.make_test_repo("childrepo")
-    def test_build_spec_superrepo(self, parentrepo, childrepo):
+    @utils.make_test_repo("reqrepo")
+    def test_build_spec_superrepo(self, parentrepo, childrepo, reqrepo):
         parentrepo = git.Repo(parentrepo)
         childname = os.path.basename(childrepo)
         with open(os.path.join(childrepo, 'setup.py'), 'w') as setup:
@@ -76,6 +77,14 @@ class TestBuildSpec(unittest.TestCase):
         parentrepo.create_submodule(childname, childname,
                                     url=childrepo.working_tree_dir)
         parentrepo.index.commit('adding child repo')
+        constraints_path = os.path.join(reqrepo, 'upper-constraints.txt')
+        with open(constraints_path, 'w') as cf:
+            cf.write("foo==1.0\n{}==11.0\n".format(childname))
+        reqrepo = git.Repo(reqrepo)
+        reqrepo.index.add(['upper-constraints.txt'])
+        reqrepo.index.commit('adding upper constraints')
+        parentrepo.create_submodule('requirements', 'requirements',
+                                    url=reqrepo.working_tree_dir)
         parenthash = parentrepo.head.commit.hexsha
         childhash = childrepo.head.commit.hexsha
         manifest = {
@@ -91,3 +100,7 @@ class TestBuildSpec(unittest.TestCase):
             self.assertEqual(childhash, bs.projects[0].gitref)
             child_path = os.path.join(parentrepo.working_tree_dir, childname)
             self.assertEqual(child_path, bs.projects[0].giturl)
+        constraints_added = os.path.join(parentrepo.working_tree_dir,
+                                         'requirements',
+                                         'upper-constraints.txt')
+        self.assertIn(constraints_added, bs.settings.constraints)

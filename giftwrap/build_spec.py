@@ -13,7 +13,6 @@
 # distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
-
 import os
 
 import git
@@ -57,6 +56,14 @@ class BuildSpec(object):
                 # Nope, detach head
                 repo.head.reference = repo.commit(self.version)
             for subdir in os.listdir(repo.working_tree_dir):
+                # requirements is special
+                if subdir == 'requirements':
+                    reqdir = os.path.join(
+                        repo.working_tree_dir, 'requirements')
+                    reqfile = os.path.join(reqdir, 'upper-constraints.txt')
+                    if reqfile not in self.settings.constraints:
+                        self.settings.constraints.append(reqfile)
+                    continue
                 # Skip any projects explicitly in the manifest
                 if subdir in existing_project_names:
                     continue
