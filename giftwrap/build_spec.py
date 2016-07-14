@@ -13,6 +13,7 @@
 # distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
+import os
 
 import git
 import yaml
@@ -57,6 +58,14 @@ class BuildSpec(object):
             for sm in repo.submodules:
                 # Skip any projects explicitly in the manifest
                 if sm.name in existing_project_names:
+                    continue
+                # requirements is special
+                if sm.name == 'requirements':
+                    reqdir = os.path.join(
+                        repo.working_tree_dir, 'requirements')
+                    reqfile = os.path.join(reqdir, 'upper-constraints.txt')
+                    if reqfile not in self.settings.constraints:
+                        self.settings.constraints.append(reqfile)
                     continue
                 project = {}
                 project['gitref'] = sm.hexsha
