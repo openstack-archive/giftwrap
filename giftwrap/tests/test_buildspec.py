@@ -63,20 +63,38 @@ class TestBuildSpec(unittest.TestCase):
             for project in bs.projects:
                 self.assertEqual('99', project.version)
 
+    def _add_setup_py(self, repo):
+        with open(os.path.join(repo.working_tree_dir,
+                               'setup.py'), 'w') as setup:
+            setup.write("#!/usr/bin/python\n")
+        repo.index.add(['setup.py'])
+        repo.index.commit('adding setup.py')
+
     @utils.make_test_repo("parentrepo")
+    @utils.make_test_repo("childrepo2")
     @utils.make_test_repo("childrepo")
     @utils.make_test_repo("reqrepo")
-    def test_build_spec_superrepo(self, parentrepo, childrepo, reqrepo):
+    def test_build_spec_superrepo(self,
+                                  parentrepo,
+                                  childrepo2,
+                                  childrepo,
+                                  reqrepo):
         parentrepo = git.Repo(parentrepo)
         childname = os.path.basename(childrepo)
-        with open(os.path.join(childrepo, 'setup.py'), 'w') as setup:
-            setup.write("#!/usr/bin/python\n")
         childrepo = git.Repo(childrepo)
-        childrepo.index.add(['setup.py'])
-        childrepo.index.commit('adding setup.py')
+        self._add_setup_py(childrepo)
+
+        child2name = os.path.basename(childrepo2)
+        childrepo2 = git.Repo(childrepo2)
+        self._add_setup_py(childrepo2)
+
+        # tag child repo to test describe behavior
+        childrepo2.create_tag('test-tag-1', message='Annotated ftw')
         parentrepo.create_submodule(childname, childname,
                                     url=childrepo.working_tree_dir)
-        parentrepo.index.commit('adding child repo')
+        parentrepo.create_submodule(child2name, child2name,
+                                    url=childrepo2.working_tree_dir)
+        parentrepo.index.commit('adding child repos')
         constraints_path = os.path.join(reqrepo, 'upper-constraints.txt')
         with open(constraints_path, 'w') as cf:
             cf.write("foo==1.0\n{}==11.0\n".format(childname))
@@ -87,6 +105,8 @@ class TestBuildSpec(unittest.TestCase):
                                     url=reqrepo.working_tree_dir)
         parenthash = parentrepo.head.commit.hexsha
         childhash = childrepo.head.commit.hexsha
+        child2hash = childrepo2.head.commit.hexsha
+        child2describe = childrepo2.git.describe(always=True)
         manifest = {
             'settings': {},
             'superrepo': parentrepo.working_tree_dir,
@@ -96,10 +116,22 @@ class TestBuildSpec(unittest.TestCase):
             tf.flush()
             tf.seek(0)
             bs = build_spec.BuildSpec(tf, parenthash)
-            self.assertEqual(1, len(bs.projects))
-            self.assertEqual(childhash, bs.projects[0].gitref)
-            child_path = os.path.join(parentrepo.working_tree_dir, childname)
-            self.assertEqual(child_path, bs.projects[0].giturl)
+        self.assertEqual(2, len(bs.projects))
+        results = {
+            childname: {
+                'gitref': childhash,
+                'version': childhash[:7],
+            },
+            child2name: {
+                'gitref': child2hash,
+                'version': child2describe,
+            }
+        }
+        for project in bs.projects:
+            child_path = os.path.join(parentrepo.working_tree_dir, project.name)
+            self.assertEqual(child_path, project.giturl)
+            self.assertEqual(results[project.name]['gitref'], project.gitref)
+            self.assertEqual(results[project.name]['version'], project.version)
         constraints_added = os.path.join(parentrepo.working_tree_dir,
                                          'requirements',
                                          'upper-constraints.txt')

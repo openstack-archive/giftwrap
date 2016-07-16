@@ -81,12 +81,18 @@ class BuildSpec(object):
                 project['gitref'] = subrepo.head.commit.hexsha
                 project['name'] = subdir
                 project['giturl'] = subrepo.working_tree_dir
+                project['version'] = subrepo.git.describe(always=True)
                 self._manifest['projects'].append(project)
         projects = []
         if 'projects' in self._manifest:
             for project in self._manifest['projects']:
                 if limit_projects is None or project['name'] in limit_projects:
+                    if project.get('version'):
+                        project_version = project['version']
+                        del project['version']
+                    else:
+                        project_version = self.version
                     projects.append(OpenstackProject.factory(self.settings,
                                                              project,
-                                                             self.version))
+                                                             project_version))
         return projects
