@@ -48,18 +48,21 @@ class BuildSpec(object):
             for project in self._manifest['projects']:
                 existing_project_names.add(project['name'])
             # Read all dirs with a setup.py as projects
-            repo = git.Repo(self._manifest['superrepo'])
             try:
-                # Try it as a branch
-                repo.heads[self.version].checkout()
-            except IndexError:
-                # Nope, detach head
-                repo.head.reference = repo.commit(self.version)
-            for subdir in os.listdir(repo.working_tree_dir):
+                repo = git.Repo(self._manifest['superrepo'])
+                try:
+                    # Try it as a branch
+                    repo.heads[self.version].checkout()
+                except IndexError:
+                    # Nope, detach head
+                    repo.head.reference = repo.commit(self.version)
+                working_tree = repo.working_tree_dir
+            except git.InvalidGitRepositoryError:
+                working_tree = self._manifest['superrepo']
+            for subdir in os.listdir(working_tree):
                 # requirements is special
                 if subdir == 'requirements':
-                    reqdir = os.path.join(
-                        repo.working_tree_dir, 'requirements')
+                    reqdir = os.path.join(working_tree, 'requirements')
                     reqfile = os.path.join(reqdir, 'upper-constraints.txt')
                     if reqfile not in self.settings.constraints:
                         self.settings.constraints.append(reqfile)
@@ -67,14 +70,13 @@ class BuildSpec(object):
                 # Skip any projects explicitly in the manifest
                 if subdir in existing_project_names:
                     continue
-                subpath = os.path.join(repo.working_tree_dir, subdir)
+                subpath = os.path.join(working_tree, subdir)
                 if not os.path.exists(os.path.join(subpath, 'setup.py')):
                     continue
                 # skip non git repos since we won't be able to figure out a
                 # version
                 try:
-                    subrepo = git.Repo(os.path.join(repo.working_tree_dir,
-                                                    subdir))
+                    subrepo = git.Repo(os.path.join(working_tree, subdir))
                 except git.exc.InvalidGitRepositoryError:
                     continue
                 project = {}
