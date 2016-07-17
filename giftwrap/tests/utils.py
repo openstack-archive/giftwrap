@@ -35,6 +35,7 @@ def make_test_repo(name='testrepo'):
                 repo.index.commit('test commit')
                 return test(*args, **kwargs)
             finally:
-                shutil.rmtree(testrepo)
+                if os.path.isdir(testrepo):
+                    shutil.rmtree(testrepo)
         return wrapper
     return decorator

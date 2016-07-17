@@ -16,6 +16,7 @@
 #    under the License.
 
 import os
+import shutil
 import tempfile
 import unittest2 as unittest
 
@@ -70,6 +71,14 @@ class TestBuildSpec(unittest.TestCase):
         repo.index.add(['setup.py'])
         repo.index.commit('adding setup.py')
 
+    def _populate_reqrepo(self, reqrepo, childname):
+        constraints_path = os.path.join(reqrepo, 'upper-constraints.txt')
+        with open(constraints_path, 'w') as cf:
+            cf.write("foo==1.0\n{}==11.0\n".format(childname))
+        reqrepo = git.Repo(reqrepo)
+        reqrepo.index.add(['upper-constraints.txt'])
+        reqrepo.index.commit('adding upper constraints')
+
     @utils.make_test_repo("parentrepo")
     @utils.make_test_repo("childrepo2")
     @utils.make_test_repo("childrepo")
@@ -95,27 +104,63 @@ class TestBuildSpec(unittest.TestCase):
         parentrepo.create_submodule(child2name, child2name,
                                     url=childrepo2.working_tree_dir)
         parentrepo.index.commit('adding child repos')
-        constraints_path = os.path.join(reqrepo, 'upper-constraints.txt')
-        with open(constraints_path, 'w') as cf:
-            cf.write("foo==1.0\n{}==11.0\n".format(childname))
-        reqrepo = git.Repo(reqrepo)
-        reqrepo.index.add(['upper-constraints.txt'])
-        reqrepo.index.commit('adding upper constraints')
+        self._populate_reqrepo(reqrepo, childname)
         parentrepo.create_submodule('requirements', 'requirements',
-                                    url=reqrepo.working_tree_dir)
-        parenthash = parentrepo.head.commit.hexsha
+                                    url=reqrepo)
+        version = parentrepo.head.commit.hexsha
+        self._test_build_spec(version,
+                              parentrepo.working_tree_dir,
+                              childrepo2,
+                              childrepo)
+
+    @utils.make_test_repo("childrepo2")
+    @utils.make_test_repo("childrepo")
+    @utils.make_test_repo("reqrepo")
+    def test_build_spec_superrepo_no_submodules(self,
+                                                childrepo2,
+                                                childrepo,
+                                                reqrepo):
+        parentdir = None
+        try:
+            parentdir = tempfile.mkdtemp()
+            childname = os.path.basename(childrepo)
+            child2name = os.path.basename(childrepo2)
+            newchildrepo = os.path.join(parentdir, childname)
+            newchildrepo2 = os.path.join(parentdir, child2name)
+            newreqrepo = os.path.join(parentdir, 'requirements')
+            os.rename(childrepo, newchildrepo)
+            os.rename(childrepo2, newchildrepo2)
+            os.rename(reqrepo, newreqrepo)
+            newchildrepo = git.Repo(newchildrepo)
+            self._add_setup_py(newchildrepo)
+            newchildrepo2 = git.Repo(newchildrepo2)
+            self._add_setup_py(newchildrepo2)
+            self._populate_reqrepo(newreqrepo, childname)
+            self._test_build_spec('9999', parentdir, newchildrepo2,
+                                  newchildrepo)
+        finally:
+            if parentdir:
+                shutil.rmtree(parentdir)
+
+    def _test_build_spec(self,
+                         version,
+                         working_tree,
+                         childrepo2,
+                         childrepo):
+        childname = os.path.basename(childrepo.working_tree_dir)
+        child2name = os.path.basename(childrepo2.working_tree_dir)
         childhash = childrepo.head.commit.hexsha
         child2hash = childrepo2.head.commit.hexsha
         child2describe = childrepo2.git.describe(always=True)
         manifest = {
             'settings': {},
-            'superrepo': parentrepo.working_tree_dir,
+            'superrepo': working_tree,
         }
         with tempfile.TemporaryFile(mode='w+') as tf:
             yaml.safe_dump(manifest, tf)
             tf.flush()
             tf.seek(0)
-            bs = build_spec.BuildSpec(tf, parenthash)
+            bs = build_spec.BuildSpec(tf, version)
         self.assertEqual(2, len(bs.projects))
         results = {
             childname: {
@@ -129,11 +174,11 @@ class TestBuildSpec(unittest.TestCase):
         }
         for project in bs.projects:
             child_path = os.path.join(
-                parentrepo.working_tree_dir, project.name)
+                working_tree, project.name)
             self.assertEqual(child_path, project.giturl)
             self.assertEqual(results[project.name]['gitref'], project.gitref)
             self.assertEqual(results[project.name]['version'], project.version)
-        constraints_added = os.path.join(parentrepo.working_tree_dir,
+        constraints_added = os.path.join(working_tree,
                                          'requirements',
                                          'upper-constraints.txt')
         self.assertIn(constraints_added, bs.settings.constraints)
