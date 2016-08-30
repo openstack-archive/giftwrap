@@ -25,7 +25,7 @@ from giftwrap.settings import Settings
 class BuildSpec(object):
 
     def __init__(self, manifest, version, build_type=None, parallel=True,
-                 limit_projects=None):
+                 limit_projects=None, project_filter=None):
         self._manifest = yaml.load(manifest)
         self.version = version
         self.build_type = build_type
@@ -39,6 +39,7 @@ class BuildSpec(object):
         manifest_settings['parallel_build'] = parallel
         self.settings = Settings.factory(manifest_settings)
         self.projects = self._render_projects(limit_projects)
+        self.project_filter = project_filter
 
     def _render_projects(self, limit_projects):
         if 'superrepo' in self._manifest:
@@ -97,4 +98,9 @@ class BuildSpec(object):
                     projects.append(OpenstackProject.factory(self.settings,
                                                              project,
                                                              project_version))
+        if self.project_filter:
+            for project in projects:
+                if project.name in self.project_filter:
+                    projects.remove(project)
+                    
         return projects
