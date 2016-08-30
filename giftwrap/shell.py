@@ -48,7 +48,7 @@ def build(args):
             manifest = fh.read()
 
         buildspec = BuildSpec(manifest, args.version, args.type, args.parallel,
-                              args.projects)
+                              args.projects, args.project_filter)
         builder = BuilderFactory.create_builder(args.type, buildspec)
 
         def _signal_handler(*args):
@@ -91,6 +91,8 @@ def main():
             return arg.split(',')
 
     build_subcmd.add_argument('-p', '--projects', type=csvarg, dest='projects')
+    build_subcmd.add_argument('-f', '--filter', type=csvarg,
+                              dest='project_filter')
     build_subcmd.set_defaults(func=build)
 
     args = parser.parse_args()
