@@ -116,7 +116,46 @@ class TestBuildSpec(unittest.TestCase):
                               parentrepo.working_tree_dir,
                               childrepo2,
                               childrepo)
+        
+    @utils.make_test_repo("parentrepo")
+    @utils.make_test_repo("childrepo2")
+    @utils.make_test_repo("childrepo")
+    @utils.make_test_repo("reqrepo")
+    def test_build_spec_superrepo_filters(self,
+                                  parentrepo,
+                                  childrepo2,
+                                  childrepo,
+                                  reqrepo):
+        parentrepo = git.Repo(parentrepo)
+        childname = os.path.basename(childrepo)
+        childrepo = git.Repo(childrepo)
+        self._add_setup_py(childrepo)
 
+        child2name = os.path.basename(childrepo2)
+        childrepo2 = git.Repo(childrepo2)
+        self._add_setup_py(childrepo2)
+
+        # tag child repo to test describe behavior
+        cw = childrepo2.config_writer()
+        cw.set_value("user", "email", "nobody@noexist.test")
+        cw.set_value("user", "name", "Nobody McNoperson")
+        cw.release()
+        childrepo2.create_tag('test-tag-1', message='Annotated ftw')
+        parentrepo.create_submodule(childname, childname,
+                                    url=childrepo.working_tree_dir)
+        parentrepo.create_submodule(child2name, child2name,
+                                    url=childrepo2.working_tree_dir)
+        parentrepo.index.commit('adding child repos')
+        self._populate_reqrepo(reqrepo, childname)
+        parentrepo.create_submodule('requirements', 'requirements',
+                                    url=reqrepo)
+        version = parentrepo.head.commit.hexsha
+        self._test_build_spec(version,
+                              parentrepo.working_tree_dir,
+                              childrepo2,
+                              childrepo,
+                              [child2name])
+        
     @utils.make_test_repo("childrepo2")
     @utils.make_test_repo("childrepo")
     @utils.make_test_repo("reqrepo")
@@ -150,7 +189,8 @@ class TestBuildSpec(unittest.TestCase):
                          version,
                          working_tree,
                          childrepo2,
-                         childrepo):
+                         childrepo,
+                         filter=None):
         childname = os.path.basename(childrepo.working_tree_dir)
         child2name = os.path.basename(childrepo2.working_tree_dir)
         childhash = childrepo.head.commit.hexsha
@@ -164,8 +204,13 @@ class TestBuildSpec(unittest.TestCase):
             yaml.safe_dump(manifest, tf)
             tf.flush()
             tf.seek(0)
-            bs = build_spec.BuildSpec(tf, version)
-        self.assertEqual(2, len(bs.projects))
+            bs = build_spec.BuildSpec(tf, version, project_filter=filter)
+
+        if not filter:
+            self.assertEqual(2, len(bs.projects))
+        else:
+            self.assertEqual(1, len(bs.projects))
+
         results = {
             childname: {
                 'gitref': childhash,

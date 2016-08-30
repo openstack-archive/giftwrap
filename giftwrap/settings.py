@@ -31,7 +31,7 @@ class Settings(object):
                  package_name_format=None, version=None,
                  base_path=None, install_path=None, gerrit_dependencies=True,
                  force_overwrite=False, output_dir=None, include_config=True,
-                 parallel_build=True, constraints=None):
+                 parallel_build=True, constraints=None, project_filter=None):
         if not version:
             raise Exception("'version' is a required settings")
         if constraints is None:
@@ -49,6 +49,7 @@ class Settings(object):
         self.include_config = include_config
         self.parallel_build = parallel_build
         self.constraints = constraints
+        self.project_filter = project_filter
 
     @property
     def package_name_format(self):
