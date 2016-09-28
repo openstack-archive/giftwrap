@@ -25,7 +25,7 @@ class TestUtil(unittest.TestCase):
     def test_execute_returns_stdout(self):
         cmd = 'echo stdout'
         out = util.execute(cmd)
-        self.assertEquals(b'stdout\n', out)
+        self.assertEqual(b'stdout\n', out)
 
     def test_execute_raises_exception_on_error(self):
         cmd = 'echo stderr >&2 && false'
@@ -35,4 +35,4 @@ class TestUtil(unittest.TestCase):
     def test_nonzero_exit_code(self):
         cmd = 'echo stdout && false'
         out = util.execute(cmd, exit=1)
-        self.assertEquals(b'stdout\n', out)
+        self.assertEqual(b'stdout\n', out)

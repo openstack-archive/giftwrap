@@ -32,7 +32,7 @@ class TestLog(unittest.TestCase):
         logger.info('test-info')
         lc.end()
 
-        self.assertEquals("giftwrap: INFO: test-info", lc.handler.buffer[0])
+        self.assertEqual("giftwrap: INFO: test-info", lc.handler.buffer[0])
 
     def test_get_logger_debug(self):
         lc = LogCapture()
@@ -43,5 +43,5 @@ class TestLog(unittest.TestCase):
         logger.debug('test-debug')
         lc.end()
 
-        self.assertEquals("giftwrap: INFO: test-info", lc.handler.buffer[0])
-        self.assertEquals("giftwrap: DEBUG: test-debug", lc.handler.buffer[1])
+        self.assertEqual("giftwrap: INFO: test-info", lc.handler.buffer[0])
+        self.assertEqual("giftwrap: DEBUG: test-debug", lc.handler.buffer[1])

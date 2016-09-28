@@ -33,16 +33,16 @@ class TestSettings(unittest.TestCase):
         settings_dict = SAMPLE_SETTINGS
         s = settings.Settings.factory(settings_dict)
 
-        self.assertEquals('my-package-name', s.package_name_format)
-        self.assertEquals('1.2', s.version)
-        self.assertEquals('/basepath', s.base_path)
-        self.assertEquals('http://example.txt', s.constraints[0])
+        self.assertEqual('my-package-name', s.package_name_format)
+        self.assertEqual('1.2', s.version)
+        self.assertEqual('/basepath', s.base_path)
+        self.assertEqual('http://example.txt', s.constraints[0])
 
     def test_factory_has_default_base_path(self):
         settings_dict = {'version': 'version'}
         s = settings.Settings.factory(settings_dict)
 
-        self.assertEquals('/opt/openstack', s.base_path)
+        self.assertEqual('/opt/openstack', s.base_path)
 
     def test_factory_raises_when_version_missing(self):
         settings_dict = SAMPLE_SETTINGS

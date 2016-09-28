@@ -44,6 +44,6 @@ class TestRepo(unittest.TestCase):
             repo.clone(outdir)
             self.assertTrue(repo.cloned)
             self.assertTrue(isinstance(repo.head, OpenstackCommit))
-            self.assertEquals(['HEAD', 'master'], repo.branches)
+            self.assertEqual(['HEAD', 'master'], repo.branches)
         finally:
             shutil.rmtree(outdir)
