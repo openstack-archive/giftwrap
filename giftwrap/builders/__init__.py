@@ -61,8 +61,13 @@ class Builder(object):
     def _get_constraints(self):
         cfiles = []
         try:
-            for i, cons_url in enumerate(self._spec.settings.constraints):
-                response = requests.get(cons_url)
+            for i, cons_uri in enumerate(self._spec.settings.constraints):
+                # NOTE(dalees): support local file uri references
+                if os.path.isfile(cons_uri):
+                    cfiles.append(cons_uri)
+                    continue
+
+                response = requests.get(cons_uri)
 
                 # Raise an error if we got a bad URL
                 response.raise_for_status()
