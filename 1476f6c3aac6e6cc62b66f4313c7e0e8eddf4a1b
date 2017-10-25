@@ -1,0 +1,8 @@
+Code-Review+2: Jesse Keating <omgjlk@us.ibm.com>
+Workflow+1: Jesse Keating <omgjlk@us.ibm.com>
+Verified+2: Zuul
+Submitted-by: Zuul
+Submitted-at: Wed, 25 Oct 2017 16:54:27 +0000
+Reviewed-on: https://review.openstack.org/514921
+Project: openstack/giftwrap
+Branch: refs/heads/master
