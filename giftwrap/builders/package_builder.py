@@ -103,7 +103,8 @@ class PackageBuilder(Builder):
         pkg = Package(project.package_name, project.version,
                       project.install_path, self._spec.settings.output_dir,
                       self._spec.settings.force_overwrite,
-                      project.system_dependencies)
+                      project.system_dependencies,
+                      self._spec.fpm_options)
         pkg.build()
 
     def _finalize_build(self):

@@ -28,6 +28,10 @@ class BuildSpec(object):
         self.version = version
         self.build_type = build_type
         manifest_settings = self._manifest['settings']
+        if 'projects' in self._manifest:
+            self.fpm_options = \
+                self._get_project_requirements(self._manifest['projects'],
+                                               'fpm_options')
         if version:
             manifest_settings['version'] = version
         if build_type:
@@ -37,6 +41,15 @@ class BuildSpec(object):
         manifest_settings['parallel_build'] = parallel
         self.settings = Settings.factory(manifest_settings)
         self.projects = self._render_projects(limit_projects)
+
+    @staticmethod
+    def _get_project_requirements(projects, cmd):
+        pkg_req = []
+        for project in projects:
+            if cmd in project:
+                (pkg_req.append(project[cmd])
+                 if project[cmd] is not None else False)
+        return pkg_req
 
     def _render_projects(self, limit_projects):
         projects = []

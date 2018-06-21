@@ -29,13 +29,14 @@ SUPPORTED_DISTROS = {
 class Package(object):
 
     def __init__(self, name, version, install_path, output_dir,
-                 overwrite=False, dependencies=None):
+                 overwrite=False, dependencies=None, fpm_options=None):
         self.name = name
         self.version = version
         self.install_path = install_path
         self.output_dir = output_dir
         self.overwrite = overwrite
         self.dependencies = dependencies
+        self.fpm_options = fpm_options
 
     def _get_platform_target(self):
         current_distro = platform.linux_distribution()[0]
@@ -45,6 +46,15 @@ class Package(object):
                     return pkgtype
         raise Exception("Sorry, '%s' is an unsupported distribution" %
                         current_distro)
+
+    def _add_commands(self, command_type):
+        # You can have defined multiple projects in yaml, iterate on projects
+        # and add to the command strings declared in yaml e.g.: copy_file
+        command = ''
+        for project in command_type:
+            for cmd in project:
+                command += '%s ' % cmd
+        return command
 
     def build(self):
         target = self._get_platform_target()
@@ -60,6 +70,19 @@ class Package(object):
             os.makedirs(self.output_dir)
 
         # not wrapping in a try block - handled by caller
-        execute("fpm %s -s dir -t %s -n %s -v %s %s %s" % (overwrite,
-                target, self.name, self.version, deps, self.install_path),
-                self.output_dir)
+        execute_command = "fpm %s -s dir -t %s -n %s -v %s " % (overwrite,
+                                                                target,
+                                                                self.name,
+                                                                self.version)
+
+        if self.fpm_options:
+            # Adding fpm options e.g.: like architecture, description, etc.
+            # More actions have been described:
+            # https://github.com/jordansissel/fpm/wiki#usage
+            execute_command += self._add_commands(self.fpm_options)
+            execute(execute_command, self.output_dir)
+        else:
+            # Execute standard command
+            execute_command = "%s %s %s" % (execute_command, deps,
+                                            self.install_path)
+            execute(execute_command, self.output_dir)

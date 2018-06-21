@@ -11,3 +11,8 @@ settings:
 projects:
   - name: glance
     gitref: stable/mitaka
+    fpm_options:
+        # Additional FPM options: https://github.com/jordansissel/fpm/wiki#usage
+        - '--architecture all'
+        - '--provides some-package'
+        - '--replaces second-package'
