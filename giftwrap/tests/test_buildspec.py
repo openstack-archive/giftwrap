@@ -59,3 +59,26 @@ class TestBuildSpec(unittest.TestCase):
             self.assertEqual(2, len(bs.projects))
             for project in bs.projects:
                 self.assertEqual('99', project.version)
+
+    def test_build_spec_projects_with_fpm_options(self):
+        fpm_options = ['--architecture all', '--replaces some-package',
+                       '--provides funny-package',
+                       '--depends very-funny-package']
+        manifest = {
+            'settings': {},
+            'projects': [
+                {
+                    'name': 'project1',
+                    'fpm_options': fpm_options,
+                },
+            ],
+        }
+        with tempfile.TemporaryFile(mode='w+') as tf:
+            version = '0'
+            yaml.safe_dump(manifest, tf)
+            tf.flush()
+            tf.seek(0)
+            bs = build_spec.BuildSpec(tf, version)
+            self.assertEqual(1, len(bs.projects))
+            for project in bs.projects:
+                self.assertEqual(fpm_options, project._fpm_options)

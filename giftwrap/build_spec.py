@@ -23,7 +23,7 @@ from giftwrap.settings import Settings
 class BuildSpec(object):
 
     def __init__(self, manifest, version, build_type=None, parallel=True,
-                 limit_projects=None):
+                 limit_projects=None, fpm_options=None):
         self._manifest = yaml.load(manifest)
         self.version = version
         self.build_type = build_type
@@ -34,6 +34,7 @@ class BuildSpec(object):
             manifest_settings['build_type'] = build_type
         if build_type == 'docker':
             parallel = False
+        self.fpm_options = fpm_options
         manifest_settings['parallel_build'] = parallel
         self.settings = Settings.factory(manifest_settings)
         self.projects = self._render_projects(limit_projects)

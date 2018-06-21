@@ -39,7 +39,7 @@ class OpenstackProject(object):
                  gitdepth=None, venv_command=None, install_command=None,
                  install_path=None, package_name=None, stackforge=False,
                  system_dependencies=[], pip_dependencies=[],
-                 postinstall_dependencies=[]):
+                 postinstall_dependencies=[], fpm_options=None):
         self._settings = settings
         self.name = name
         self._version = version
@@ -55,6 +55,7 @@ class OpenstackProject(object):
         self.system_dependencies = system_dependencies
         self.pip_dependencies = pip_dependencies
         self.postinstall_dependencies = postinstall_dependencies
+        self._fpm_options = fpm_options
 
     @property
     def version(self):
